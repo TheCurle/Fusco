@@ -93,7 +93,7 @@ class Lexer : public Common {
 public:
     Lexer(std::string Prompt) {
         SrcText = Prompt;
-        Line = Overread = 0;
+        Line = Overread = SrcOffset = 0;
     }
 
     void Advance();
