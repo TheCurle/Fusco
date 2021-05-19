@@ -5,6 +5,7 @@
 
 #include <fstream>
 #include <string>
+#include <vector>
 #include <Main.hpp>
 
 /*
@@ -90,7 +91,33 @@ struct Token {
 
 class Lexer : public Common {
 public:
-    Lexer() {
+    Lexer(std::string Prompt) {
+        SrcText = Prompt;
+        Line = Overread = 0;
+    }
+
+    void Advance();
+
+    std::vector<Token> GetTokens() {
+        return TokenList;
+    };
+
+    void ConsumeAllInput() {
+        while(CurrentToken.Lexeme != LI_EOF) {
+            Advance();
+            TokenList.emplace_back(CurrentToken);
+        }
+
+        Token TokenEOF = (Token) {
+            .Lexeme = LI_EOF
+        };
+
+        TokenList.emplace_back(TokenEOF);
+    }
+
+    std::vector<Token> ConsumeAllAndReturn() {
+        ConsumeAllInput();
+        return GetTokens();
     }
 
 private:
@@ -98,14 +125,13 @@ private:
     int Line;
     int Overread;
 
-    std::ifstream SrcFile;
     std::string SrcText;
     size_t SrcOffset;
 
+    std::vector<Token> TokenList;
+
     struct Token CurrentToken;
     std::string CurrentIdentifier;
-
-    void Advance();
 
     // Character reading & decoding
     void ReturnCharToStream(int Char);
