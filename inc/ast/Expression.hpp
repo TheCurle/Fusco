@@ -34,6 +34,8 @@ template <typename T>
 class Expression {
 public:
     Expression() {}
+    Expression(const Expression&) = delete;
+    Expression& operator=(const Expression&) = delete;
     virtual ~Expression() = default;
     virtual T accept(Visitor<T>* visitor) {
         return visitor->dummy();
@@ -43,29 +45,29 @@ public:
 template <typename T>
 class BinaryExpression : public Expression<T> {
 public:
-    BinaryExpression(Expression<T> pLeft, Token pOperator, Expression<T> pRight)
+    BinaryExpression(Expression<T>* pLeft, Token pOperator, Expression<T>* pRight)
         : left(pLeft), operatorToken(pOperator), right(pRight) {}
 
     T accept(Visitor<T>* visitor) {
         return visitor->visitBinaryExpression(this);
     }
 
-    Expression<T> left;
-    Expression<T> right;
+    Expression<T>* left;
+    Expression<T>* right;
     struct Token operatorToken;
 };
 
 template <typename T>
 class GroupingExpression : public Expression<T> {
 public:
-    GroupingExpression(Expression<T> pExpression)
+    GroupingExpression(Expression<T>* pExpression)
         : expression(pExpression) {}
 
     T accept(Visitor<T>* visitor) {
         return visitor->visitGroupingExpression(this);
     }
 
-    Expression<T> expression;
+    Expression<T>* expression;
 };
 
 template <typename T>
@@ -83,7 +85,7 @@ public:
 template <typename T>
 class UnaryExpression : public Expression<T> {
 public:
-    UnaryExpression(Token pOperator, Expression<T> pRight)
+    UnaryExpression(Token pOperator, Expression<T>* pRight)
         : operatorToken(pOperator), right(pRight) {}
 
     T accept(Visitor<T>* visitor) {
@@ -91,7 +93,7 @@ public:
     }
 
     struct Token operatorToken;
-    Expression<T> right;
+    Expression<T>* right;
 };
 
 

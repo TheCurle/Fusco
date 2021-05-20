@@ -21,13 +21,13 @@ void lex(std::string text) {
 
     LiteralExpression<std::string> literal123("123");
     struct Token subtract = (struct Token) { AR_MINUS, "-", '-' };
-    UnaryExpression<std::string> unaryNegative(subtract, literal123);
+    UnaryExpression<std::string> unaryNegative(subtract, &literal123);
 
     struct Token multiply = (struct Token) { AR_ASTERISK, "*", '*' };
     LiteralExpression<std::string> literal45("45");
-    GroupingExpression<std::string> literalGroup(literal45);
+    GroupingExpression<std::string> literalGroup(&literal45);
 
-    BinaryExpression<std::string> result(unaryNegative, multiply, literalGroup);
+    BinaryExpression<std::string> result(&unaryNegative, multiply, &literalGroup);
 
     TreePrinter printer;
     std::cout << printer.print(&result) << std::endl;

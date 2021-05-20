@@ -14,11 +14,11 @@ std::string TreePrinter::print(Expression<std::string>* expr) {
 }
 
 std::string TreePrinter::visitBinaryExpression(BinaryExpression<std::string>* expr) {
-    return parenthesize(expr->operatorToken.Lexeme, expr->left, expr->right);
+    return parenthesize(expr->operatorToken.Lexeme, &expr->left, &expr->right);
 }
 
 std::string TreePrinter::visitGroupingExpression(GroupingExpression<std::string>* expr) {
-    return parenthesize("group", expr->expression);
+    return parenthesize("group", &expr->expression);
 }
 
 std::string TreePrinter::visitLiteralExpression(LiteralExpression<std::string>* expr) {
@@ -28,7 +28,7 @@ std::string TreePrinter::visitLiteralExpression(LiteralExpression<std::string>* 
 }
 
 std::string TreePrinter::visitUnaryExpression(UnaryExpression<std::string>* expr) {
-    return parenthesize(expr->operatorToken.Lexeme, expr->right);
+    return parenthesize(expr->operatorToken.Lexeme, &expr->right);
 }
 
 template <class... Args>
@@ -36,12 +36,12 @@ std::string TreePrinter::parenthesize(std::string Header, Args... args) {
     std::string builder("(");
     builder.append(Header);
 
-    std::vector<Expression<std::string>> vec;
+    std::vector<Expression<std::string>*> vec;
 
-    (vec.push_back(args), ...);
+    (vec.push_back(*args), ...);
 
-    for(const auto value: vec) {
-        builder.append(" ").append(value.accept((Visitor*) this));
+    for(auto value: vec) {
+        builder.append(" ").append(value->accept(this));
     }
 
     builder.append(")");
