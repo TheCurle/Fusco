@@ -107,12 +107,6 @@ public:
             Advance();
             TokenList.emplace_back(CurrentToken);
         }
-
-        Token TokenEOF = (Token) {
-            .Lexeme = LI_EOF
-        };
-
-        TokenList.emplace_back(TokenEOF);
     }
 
     std::vector<Token> ConsumeAllAndReturn() {
@@ -147,7 +141,7 @@ private:
     int ReadKeyword(std::string Str);
 
     // Error reporting
-    void VerifyToken(int Type, char* TokenExpected);
+    void VerifyToken(int Type, std::string TokenExpected);
 
     /**
      * Print the given message in an error, to the user.

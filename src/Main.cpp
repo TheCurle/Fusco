@@ -10,7 +10,7 @@ void lex(std::string text) {
     auto tokens = tempLexer.ConsumeAllAndReturn();
     for (size_t i = 0; i < tokens.size(); i++) {
         Token currentToken = tokens.at(i);
-        std::cout << currentToken.Lexeme;
+        std::cout << currentToken.Lexeme << " ";
     }
     std::cout << std::endl;
 

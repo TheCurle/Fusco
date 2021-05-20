@@ -47,10 +47,10 @@ int Lexer::NextChar() {
         return Char;
     }
 
-    if(SrcText.length() >= SrcOffset + 1)
-        Error("Unexpected end of input.");
-
-    Char = SrcText.at(SrcOffset++);
+    if(SrcOffset >= SrcText.length())
+        Char = EOF;
+    else
+        Char = SrcText.at(SrcOffset++);
 
     if(Char == '\n')
         Line++;
@@ -96,12 +96,11 @@ int Lexer::FindDigitFromPos(std::string String, char Char) {
  *
  */
 
-void Lexer::VerifyToken(int Type, char* TokenExpected) {
+void Lexer::VerifyToken(int Type, std::string TokenExpected) {
     if(CurrentToken.Lexeme == Type)
         Advance();
     else {
-        printf("Expected %s on line %d\n", TokenExpected, Line);
-        exit(1);
+        Error("Expected %s on line %d\n" + TokenExpected);
     }
 }
 
@@ -224,7 +223,7 @@ int Lexer::ReadCharLiteral() {
  *
  */
 std::string Lexer::ReadStringLiteral() {
-    char CurrentChar;
+    char CurrentChar = ReadCharLiteral();
     std::string Temp;
 
     while(CurrentChar != '"') {
