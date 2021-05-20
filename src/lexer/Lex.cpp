@@ -97,7 +97,7 @@ int Lexer::FindDigitFromPos(std::string String, char Char) {
  */
 
 void Lexer::VerifyToken(int Type, std::string TokenExpected) {
-    if(CurrentToken.Lexeme == Type)
+    if(CurrentToken.Type == Type)
         Advance();
     else {
         Error("Expected %s on line %d\n" + TokenExpected);
@@ -336,21 +336,24 @@ int Lexer::ReadKeyword(std::string Str) {
 void Lexer::Advance() {
     int Char, TokenType;
     struct Token* Token = &CurrentToken;
+    Token->Lexeme = "";
 
     Char = FindChar();
 
     switch(Char) {
         case EOF:
-            Token->Lexeme = LI_EOF;
+            Token->Type = LI_EOF;
             return;
 
         case '+':
             // + can be either "+" or "++".
             Char = NextChar();
             if(Char == '+') {
-                Token->Lexeme = PPMM_PLUS;
+                Token->Lexeme = "++";
+                Token->Type = PPMM_PLUS;
             } else {
-                Token->Lexeme = AR_PLUS;
+                Token->Type = AR_PLUS;
+                Token->Lexeme = "+";
                 ReturnCharToStream(Char);
             }
             break;
@@ -359,37 +362,45 @@ void Lexer::Advance() {
             // - can be either "-" or "--"
             Char = NextChar();
             if(Char == '-') {
-                Token->Lexeme = PPMM_MINUS;
+                Token->Lexeme = "--";
+                Token->Type = PPMM_MINUS;
             } else {
-                Token->Lexeme = AR_MINUS;
+                Token->Type = AR_MINUS;
+                Token->Lexeme = "-";
                 ReturnCharToStream(Char);
             }
             break;
 
         case '*':
-            Token->Lexeme = AR_ASTERISK;
+            Token->Lexeme = Char;
+            Token->Type = AR_ASTERISK;
             break;
 
         case '/':
-            Token->Lexeme = AR_RSLASH;
+            Token->Lexeme = Char;
+            Token->Type = AR_RSLASH;
             break;
 
         case ',':
-            Token->Lexeme = LI_COMMA;
+            Token->Lexeme = Char;
+            Token->Type = LI_COMMA;
             break;
 
         case '=':
             Char = NextChar();
             // If the next char is =, we have ==, the compare equality token.
             if(Char == '?') {
-                Token->Lexeme = CMP_EQUAL;
+                Token->Lexeme = "=?";
+                Token->Type = CMP_EQUAL;
             // if the next char is >, we have =>, the greater than or equal token.
             } else if(Char == '>') {
-                Token->Lexeme = CMP_GREAT_EQUAL;
+                Token->Lexeme = "=>";
+                Token->Type = CMP_GREAT_EQUAL;
             // If none of the above match, we have = and an extra char. Return the char and set the token
             } else {
                 ReturnCharToStream(Char);
-                Token->Lexeme = LI_EQUAL;
+                Token->Lexeme = "=";
+                Token->Type = LI_EQUAL;
             }
             break;
 
@@ -397,11 +408,13 @@ void Lexer::Advance() {
             Char = NextChar();
             // If the next char is =, we have !=, the compare inequality operator.
             if(Char == '=') {
-                Token->Lexeme = CMP_INEQ;
+                Token->Lexeme = "!=";
+                Token->Type = CMP_INEQ;
             // Otherwise, we have a spare char
             } else {
-                Token->Lexeme = BOOL_EXCLAIM;
                 ReturnCharToStream(Char);
+                Token->Lexeme = "!";
+                Token->Type = BOOL_EXCLAIM;
             }
             break;
 
@@ -409,48 +422,59 @@ void Lexer::Advance() {
             Char = NextChar();
             // If the next char is =, we have <=, the less than or equal comparator.
             if(Char == '=') {
-                Token->Lexeme = CMP_LESS_EQUAL;
+                Token->Lexeme = "<=";
+                Token->Type = CMP_LESS_EQUAL;
             } else {
                 ReturnCharToStream(Char);
-                Token->Lexeme = CMP_LESS;
+                Token->Lexeme = "<";
+                Token->Type = CMP_LESS;
             }
             break;
 
         case '>':
-            Token->Lexeme = CMP_GREATER;
+            Token->Lexeme = Char;
+            Token->Type = CMP_GREATER;
             break;
 
         case ';':
-            Token->Lexeme = LI_SEMICOLON;
+            Token->Lexeme = Char;
+            Token->Type = LI_SEMICOLON;
             break;
 
         case '(':
-            Token->Lexeme = LI_LPAREN;
+            Token->Lexeme = Char;
+            Token->Type = LI_LPAREN;
             break;
 
         case ')':
-            Token->Lexeme = LI_RPAREN;
+            Token->Lexeme = Char;
+            Token->Type = LI_RPAREN;
             break;
 
         case '{':
-            Token->Lexeme = LI_LBRACE;
+            Token->Lexeme = Char;
+            Token->Type = LI_LBRACE;
             break;
 
         case '}':
-            Token->Lexeme = LI_RBRACE;
+            Token->Lexeme = Char;
+            Token->Type = LI_RBRACE;
             break;
 
         case '[':
-            Token->Lexeme = LI_LBRAS;
+            Token->Lexeme = Char;
+            Token->Type = LI_LBRAS;
             break;
 
         case ']':
-            Token->Lexeme = LI_RBRAS;
+            Token->Lexeme = Char;
+            Token->Type = LI_RBRAS;
             break;
 
         case '\'':
             Token->Value = ReadCharLiteral();
-            Token->Lexeme = LI_NUMBER;
+            Token->Lexeme = Token->Value;
+            Token->Type = LI_NUMBER;
 
             if(NextChar() != '\'')
                 Error("Expected ' at the end of a character.");
@@ -458,25 +482,28 @@ void Lexer::Advance() {
 
         case '"':
             CurrentIdentifier = ReadStringLiteral();
-            Token->Lexeme = LI_STRING;
+            Token->Lexeme = CurrentIdentifier;
+            Token->Type = LI_STRING;
             break;
 
         default:
             if(isdigit(Char)) {
 
                 Token->Value = ReadNumber(Char);
-                Token->Lexeme = LI_NUMBER;
+                Token->Lexeme = std::to_string(Token->Value);
+                Token->Type = LI_NUMBER;
                 break;
 
             } else if(isalpha(Char) || Char == '_') { // This is what defines what a variable/function/keyword can START with.
                 CurrentIdentifier = ReadIdentifier(Char, 255);
 
                 if(TokenType = ReadKeyword(CurrentIdentifier)) {
-                    Token->Lexeme = TokenType;
+                    Token->Type = TokenType;
                     break;
                 }
 
-                Token->Lexeme = LI_IDENTIFIER;
+                Token->Type = LI_IDENTIFIER;
+                Token->Lexeme = CurrentIdentifier;
                 break;
             }
 

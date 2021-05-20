@@ -3,12 +3,13 @@
  *   FUSCO*
  **********/
 
+#pragma once
 #include <string>
 #include <iostream>
 
-#define INTERP_VERSION "0.2"
+extern bool ErrorState;
 
-bool ErrorState = false;
+#define INTERP_VERSION "0.2"
 
 class Common {
 public:

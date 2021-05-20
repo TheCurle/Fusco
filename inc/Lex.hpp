@@ -3,6 +3,7 @@
  *   FUSCO*
  **********/
 
+#pragma once
 #include <fstream>
 #include <string>
 #include <vector>
@@ -85,7 +86,8 @@ enum Lexeme {
  * and a value. The value can hold any valid Fusco data type.
  */
 struct Token {
-    int Lexeme;
+    int Type;
+    std::string Lexeme;
     int Value;
 };
 
@@ -103,7 +105,7 @@ public:
     };
 
     void ConsumeAllInput() {
-        while(CurrentToken.Lexeme != LI_EOF) {
+        while(CurrentToken.Type != LI_EOF) {
             Advance();
             TokenList.emplace_back(CurrentToken);
         }

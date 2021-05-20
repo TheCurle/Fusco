@@ -4,15 +4,33 @@
  **********/
 
 #include "Lex.hpp"
+#include <AST.hpp>
+#include <ast/Expression.hpp>
+
+bool ErrorState = false;
 
 void lex(std::string text) {
+    /*
     Lexer tempLexer(text);
     auto tokens = tempLexer.ConsumeAllAndReturn();
     for (size_t i = 0; i < tokens.size(); i++) {
         Token currentToken = tokens.at(i);
-        std::cout << currentToken.Lexeme << " ";
+        std::cout << "\t" << currentToken.Type << " " << currentToken.Lexeme << std::endl;
     }
-    std::cout << std::endl;
+    std::cout << std::endl; */
+
+    LiteralExpression<std::string> literal123("123");
+    struct Token subtract = (struct Token) { AR_MINUS, "-", '-' };
+    UnaryExpression<std::string> unaryNegative(subtract, literal123);
+
+    struct Token multiply = (struct Token) { AR_ASTERISK, "*", '*' };
+    LiteralExpression<std::string> literal45("45");
+    GroupingExpression<std::string> literalGroup(literal45);
+
+    BinaryExpression<std::string> result(unaryNegative, multiply, literalGroup);
+
+    TreePrinter printer;
+    std::cout << printer.print(&result) << std::endl;
 
 }
 
