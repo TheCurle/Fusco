@@ -481,7 +481,7 @@ void Lexer::Advance() {
             }
 
 
-            Error("Unrecognized character" + std::to_string(Char));
+            Error("Unrecognized character " + std::to_string(Char));
     }
 }
 

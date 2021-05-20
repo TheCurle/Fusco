@@ -22,8 +22,8 @@ int main(int argc, char** argv) {
     std::cout << "20/05/21, Curle" << std::endl << std::endl;
     std::cout << "> ";
     for(std::string line; std::getline(std::cin, line);) {
-        std::cout << "> ";
         lex(line);
+        std::cout << "> ";
     }
 }
 
