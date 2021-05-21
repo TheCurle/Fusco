@@ -3,22 +3,25 @@
  *   FUSCO*
  **********/
 
-#include "Lex.hpp"
+#include <Lex.hpp>
+#include <Parse.hpp>
 #include <AST.hpp>
 #include <ast/Expression.hpp>
 
 bool ErrorState = false;
 
 void lex(std::string text) {
-    /*
-    Lexer tempLexer(text);
-    auto tokens = tempLexer.ConsumeAllAndReturn();
-    for (size_t i = 0; i < tokens.size(); i++) {
-        Token currentToken = tokens.at(i);
-        std::cout << "\t" << currentToken.Type << " " << currentToken.Lexeme << std::endl;
-    }
-    std::cout << std::endl; */
 
+    Lexer tokenStream(text);
+    auto tokens = tokenStream.ConsumeAllAndReturn();
+    Parser parser(tokens);
+    Expression<std::string>* expression = parser.parse();
+
+    if(ErrorState) return;
+
+    TreePrinter printer;
+    std::cout << printer.print(expression) << std::endl;
+    /*
     LiteralExpression<std::string> literal123("123");
     struct Token subtract = (struct Token) { AR_MINUS, "-", '-' };
     UnaryExpression<std::string> unaryNegative(subtract, &literal123);
@@ -28,10 +31,7 @@ void lex(std::string text) {
     GroupingExpression<std::string> literalGroup(&literal45);
 
     BinaryExpression<std::string> result(&unaryNegative, multiply, &literalGroup);
-
-    TreePrinter printer;
-    std::cout << printer.print(&result) << std::endl;
-
+    */
 }
 
 int main(int argc, char** argv) {

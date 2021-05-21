@@ -13,12 +13,12 @@ extern bool ErrorState;
 
 class Common {
 public:
-    void Error(int Line, std::string Message) {
+    void Error(size_t Line, std::string Message) {
         Report(Line, "", Message);
         ErrorState = true;
     }
 private:
-    void Report(int Line, std::string Where, std::string Message) {
+    void Report(size_t Line, std::string Where, std::string Message) {
         std::cout << "[line " << Line << "] Error" << Where << ": " << Message << std::endl;
     }
 };

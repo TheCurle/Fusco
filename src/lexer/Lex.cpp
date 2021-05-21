@@ -307,6 +307,10 @@ int Lexer::ReadKeyword(std::string Str) {
                 return KW_TRUE;
             break;
 
+        case 'v':
+            if(Str.compare("var") == 0)
+                return KW_VAR;
+
         case 'w':
             if(Str.compare("while") == 0)
                 return KW_WHILE;
@@ -337,6 +341,7 @@ void Lexer::Advance() {
     int Char, TokenType;
     struct Token* Token = &CurrentToken;
     Token->Lexeme = "";
+    Token->Line = Line;
 
     Char = FindChar();
 

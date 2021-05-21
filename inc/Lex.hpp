@@ -59,6 +59,7 @@ enum Lexeme {
     KW_OR,  // or
 
     KW_FUNC, // func
+    KW_VAR,  // var
 
     KW_CLASS,  // class
     KW_THIS,   // this
@@ -87,6 +88,7 @@ enum Lexeme {
  */
 struct Token {
     int Type;
+    size_t Line;
     std::string Lexeme;
     int Value;
 };
