@@ -14,7 +14,7 @@ public:
     Parser(std::vector<struct Token> pTokens)
         : tokens(pTokens), currentToken(0) {}
 
-    Expression<std::string>* parse();
+    Expression<Object>* parse();
 
 private:
     std::vector<struct Token> tokens;
@@ -30,13 +30,13 @@ private:
     bool endOfStream();
 
     /** Statement Parsing **/
-    Expression<std::string>* expression();
-    Expression<std::string>* equality();
-    Expression<std::string>* comparison();
-    Expression<std::string>* term();
-    Expression<std::string>* factor();
-    Expression<std::string>* unary();
-    Expression<std::string>* primary();
+    Expression<Object>* expression();
+    Expression<Object>* equality();
+    Expression<Object>* comparison();
+    Expression<Object>* term();
+    Expression<Object>* factor();
+    Expression<Object>* unary();
+    Expression<Object>* primary();
 
     /** Error management **/
     struct Token verify(Lexeme type, std::string error);

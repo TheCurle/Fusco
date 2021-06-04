@@ -6,29 +6,28 @@
 #include <string>
 #include <cstdarg>
 #include <initializer_list>
-#include <AST.hpp>
 #include <ast/Expression.hpp>
 
-std::string TreePrinter::print(Expression<std::string>* expr) {
+Object TreePrinter::print(Expression<Object>* expr) {
     return expr->accept(this);
 }
 
-std::string TreePrinter::visitBinaryExpression(BinaryExpression<std::string>* expr) {
-    return parenthesize(expr->operatorToken.Lexeme, &expr->left, &expr->right);
+Object TreePrinter::visitBinaryExpression(BinaryExpression<Object>* expr) {
+    return Object::NewStr(parenthesize(expr->operatorToken.Lexeme, &expr->left, &expr->right));
 }
 
-std::string TreePrinter::visitGroupingExpression(GroupingExpression<std::string>* expr) {
-    return parenthesize("group", &expr->expression);
+Object TreePrinter::visitGroupingExpression(GroupingExpression<Object>* expr) {
+    return Object::NewStr(parenthesize("group", &expr->expression));
 }
 
-std::string TreePrinter::visitLiteralExpression(LiteralExpression<std::string>* expr) {
-    if (expr->value.empty())
-        return "null";
+Object TreePrinter::visitLiteralExpression(LiteralExpression<Object>* expr) {
+    if (expr->value.Type == Object::NullType)
+        return Object::Null();
     return expr->value;
 }
 
-std::string TreePrinter::visitUnaryExpression(UnaryExpression<std::string>* expr) {
-    return parenthesize(expr->operatorToken.Lexeme, &expr->right);
+Object TreePrinter::visitUnaryExpression(UnaryExpression<Object>* expr) {
+    return Object::NewStr(parenthesize(expr->operatorToken.Lexeme, &expr->right));
 }
 
 template <class... Args>
@@ -36,12 +35,12 @@ std::string TreePrinter::parenthesize(std::string Header, Args... args) {
     std::string builder("(");
     builder.append(Header);
 
-    std::vector<Expression<std::string>*> vec;
+    std::vector<Expression<Object>*> vec;
 
     (vec.push_back(*args), ...);
 
     for(auto value: vec) {
-        builder.append(" ").append(value->accept(this));
+        builder.append(" ").append(value->accept(this).ToString());
     }
 
     builder.append(")");

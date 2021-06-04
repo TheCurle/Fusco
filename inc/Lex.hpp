@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <Main.hpp>
+#include <Types.hpp>
 
 /*
  * A lexeme is the largest representable packet of information that the lexer can output.
@@ -90,7 +91,7 @@ struct Token {
     int Type;
     size_t Line;
     std::string Lexeme;
-    int Value;
+    Object Value;
 };
 
 class Lexer : public Common {

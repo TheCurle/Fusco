@@ -5,7 +5,6 @@
 
 #include <Lex.hpp>
 #include <Parse.hpp>
-#include <AST.hpp>
 #include <ast/Expression.hpp>
 
 bool ErrorState = false;
@@ -15,12 +14,12 @@ void lex(std::string text) {
     Lexer tokenStream(text);
     auto tokens = tokenStream.ConsumeAllAndReturn();
     Parser parser(tokens);
-    Expression<std::string>* expression = parser.parse();
+    Expression<Object>* expression = parser.parse();
 
     if(ErrorState) return;
 
     TreePrinter printer;
-    std::cout << printer.print(expression) << std::endl;
+    std::cout << printer.print(expression).ToString() << std::endl;
     /*
     LiteralExpression<std::string> literal123("123");
     struct Token subtract = (struct Token) { AR_MINUS, "-", '-' };

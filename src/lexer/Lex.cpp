@@ -477,8 +477,8 @@ void Lexer::Advance() {
             break;
 
         case '\'':
-            Token->Value = ReadCharLiteral();
-            Token->Lexeme = Token->Value;
+            Token->Value = Object::NewNum((double) ReadCharLiteral());
+            Token->Lexeme = std::to_string(Token->Value.Num);
             Token->Type = LI_NUMBER;
 
             if(NextChar() != '\'')
@@ -493,9 +493,8 @@ void Lexer::Advance() {
 
         default:
             if(isdigit(Char)) {
-
-                Token->Value = ReadNumber(Char);
-                Token->Lexeme = std::to_string(Token->Value);
+                Token->Value = Object::NewNum(ReadNumber(Char));
+                Token->Lexeme = std::to_string(Token->Value.Num);
                 Token->Type = LI_NUMBER;
                 break;
 

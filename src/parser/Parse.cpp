@@ -5,7 +5,7 @@
 
 #include <Parse.hpp>
 
-Expression<std::string>* Parser::parse() {
+Expression<Object>* Parser::parse() {
     try {
         return expression();
     }
@@ -17,80 +17,83 @@ Expression<std::string>* Parser::parse() {
 
 }
 
-Expression<std::string>* Parser::expression() {
+Expression<Object>* Parser::expression() {
     return equality();
 }
 
-Expression<std::string>* Parser::equality() {
-    Expression<std::string>* expr = comparison();
+Expression<Object>* Parser::equality() {
+    Expression<Object>* expr = comparison();
 
     while(matchAny(CMP_INEQ, CMP_EQUAL)) {
         struct Token operatorToken = previous();
-        Expression<std::string>* right = comparison();
-        expr = new BinaryExpression<std::string>(expr, operatorToken, right);
+        Expression<Object>* right = comparison();
+        expr = new BinaryExpression<Object>(expr, operatorToken, right);
     }
 
     return expr;
 }
 
-Expression<std::string>* Parser::comparison() {
-    Expression<std::string>* expr = term();
+Expression<Object>* Parser::comparison() {
+    Expression<Object>* expr = term();
 
     while(matchAny(CMP_GREATER, CMP_GREAT_EQUAL, CMP_LESS, CMP_LESS_EQUAL)) {
         struct Token operatorToken = previous();
-        Expression<std::string>* right = term();
-        expr = new BinaryExpression<std::string>(expr, operatorToken, right);
+        Expression<Object>* right = term();
+        expr = new BinaryExpression<Object>(expr, operatorToken, right);
     }
 
     return expr;
 }
 
-Expression<std::string>* Parser::term() {
-    Expression<std::string>* expr = factor();
+Expression<Object>* Parser::term() {
+    Expression<Object>* expr = factor();
 
     while(matchAny(AR_MINUS, AR_PLUS)) {
         struct Token operatorToken = previous();
-        Expression<std::string>* right = factor();
-        expr = new BinaryExpression<std::string>(expr, operatorToken, right);
+        Expression<Object>* right = factor();
+        expr = new BinaryExpression<Object>(expr, operatorToken, right);
     }
 
     return expr;
 }
 
-Expression<std::string>* Parser::factor() {
-    Expression<std::string>* expr = unary();
+Expression<Object>* Parser::factor() {
+    Expression<Object>* expr = unary();
 
     while(matchAny(AR_ASTERISK, AR_RSLASH)) {
         struct Token operatorToken = previous();
-        Expression<std::string>* right = unary();
-        expr = new BinaryExpression<std::string>(expr, operatorToken, right);
+        Expression<Object>* right = unary();
+        expr = new BinaryExpression<Object>(expr, operatorToken, right);
     }
 
     return expr;
 }
 
-Expression<std::string>* Parser::unary() {
+Expression<Object>* Parser::unary() {
     if(matchAny(BOOL_EXCLAIM, AR_MINUS)) {
         struct Token operatorToken = previous();
-        Expression<std::string>* right = unary();
-        return new UnaryExpression<std::string>(operatorToken, right);
+        Expression<Object>* right = unary();
+        return new UnaryExpression<Object>(operatorToken, right);
     }
 
     return primary();
 }
 
-Expression<std::string>* Parser::primary() {
-    if(matchAny(KW_FALSE)) return new LiteralExpression(std::string("false"));
-    if(matchAny(KW_TRUE)) return new LiteralExpression(std::string("true"));
-    if(matchAny(KW_NULL)) return new LiteralExpression(std::string("null"));
+Expression<Object>* Parser::primary() {
+    if(matchAny(KW_FALSE)) return new LiteralExpression(Object::NewBool(false));
+    if(matchAny(KW_TRUE)) return new LiteralExpression(Object::NewBool(true));
+    if(matchAny(KW_NULL)) return new LiteralExpression(Object::Null());
 
-    if(matchAny(LI_NUMBER, LI_STRING))
-        return new LiteralExpression<std::string>(previous().Lexeme);
+    if(matchAny(LI_NUMBER))
+        return new LiteralExpression<Object>(previous().Value);
+
+    if(matchAny(LI_STRING))
+        return new LiteralExpression<Object>(Object::NewStr(previous().Lexeme));
 
     if(matchAny(LI_LPAREN)) {
-        Expression<std::string>* expr = expression();
+        Expression<Object>* expr = expression();
         verify(LI_RPAREN, "Expected ')' after expression");
-        return new GroupingExpression<std::string>(expr);
+        return new GroupingExpression<Object>(expr);
     }
 
     throw error(peek(), "Expected an expression");

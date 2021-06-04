@@ -97,21 +97,21 @@ public:
 };
 
 
-class TreePrinter : public Visitor<std::string> {
+class TreePrinter : public Visitor<Object> {
 public:
     ~TreePrinter() {}
 
-    std::string dummy() { return ""; }
+    Object dummy() { return Object::Null(); }
 
-    std::string print(Expression<std::string>* expr);
+    Object print(Expression<Object>* expr);
 
-    std::string visitBinaryExpression(BinaryExpression<std::string>* expr);
+    Object visitBinaryExpression(BinaryExpression<Object>* expr);
 
-    std::string visitGroupingExpression(GroupingExpression<std::string>* expr);
+    Object visitGroupingExpression(GroupingExpression<Object>* expr);
 
-    std::string visitLiteralExpression(LiteralExpression<std::string>* expr);
+    Object visitLiteralExpression(LiteralExpression<Object>* expr);
 
-    std::string visitUnaryExpression(UnaryExpression<std::string>* expr);
+    Object visitUnaryExpression(UnaryExpression<Object>* expr);
 private:
     template <class ... Args>
     std::string parenthesize(std::string Header, Args ... args);
