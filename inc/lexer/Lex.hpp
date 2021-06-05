@@ -8,7 +8,8 @@
 #include <string>
 #include <vector>
 #include <Main.hpp>
-#include <Types.hpp>
+#include <interpreter/Types.hpp>
+#include <lexer/Token.hpp>
 
 /*
  * A lexeme is the largest representable packet of information that the lexer can output.
@@ -80,18 +81,6 @@ enum Lexeme {
     KW_PRINT, // print
 
     LI_EOF // EOF trigger, no textual representation
-};
-
-/**
- * A token represents the current unit held.
- * It encodes a type - an entry into the above TokenType enum,
- * and a value. The value can hold any valid Fusco data type.
- */
-struct Token {
-    int Type;
-    size_t Line;
-    std::string Lexeme;
-    Object Value;
 };
 
 class Lexer : public Common {

@@ -6,6 +6,7 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include <interpreter/Errors.hpp>
 
 extern bool ErrorState;
 
@@ -15,6 +16,11 @@ class Common {
 public:
     void Error(size_t Line, std::string Message) {
         Report(Line, "", Message);
+        ErrorState = true;
+    }
+
+    void Error(RuntimeError error) {
+        Report(error.Cause.Line, "", error.Message);
         ErrorState = true;
     }
 private:

@@ -3,11 +3,16 @@
  *   FUSCO*
  **********/
 
-#include <Lex.hpp>
+#include <lexer/Lex.hpp>
 #include <Parse.hpp>
 #include <ast/Expression.hpp>
+#include <interpreter/Interpreter.hpp>
 
 bool ErrorState = false;
+
+static Interpreter Engine;
+
+Object Object::Null;
 
 void lex(std::string text) {
 
@@ -34,6 +39,7 @@ void lex(std::string text) {
 }
 
 int main(int argc, char** argv) {
+    Object::Null.Type = Object::NullType;
     // Emulate a REPL (Read, Evaluate, Print, Loop)
     std::cout << "Fusco Interpreter, version " << INTERP_VERSION << std::endl;
     std::cout << "20/05/21, Curle" << std::endl << std::endl;

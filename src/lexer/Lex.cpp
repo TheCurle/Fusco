@@ -2,7 +2,7 @@
  * GEMWIRE *
  *  FUSCO  *
  ***********/
-#include "Lex.hpp"
+#include <lexer/Lex.hpp>
 
 
 /**

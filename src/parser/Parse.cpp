@@ -82,7 +82,7 @@ Expression<Object>* Parser::unary() {
 Expression<Object>* Parser::primary() {
     if(matchAny(KW_FALSE)) return new LiteralExpression(Object::NewBool(false));
     if(matchAny(KW_TRUE)) return new LiteralExpression(Object::NewBool(true));
-    if(matchAny(KW_NULL)) return new LiteralExpression(Object::Null());
+    if(matchAny(KW_NULL)) return new LiteralExpression(Object::Null);
 
     if(matchAny(LI_NUMBER))
         return new LiteralExpression<Object>(previous().Value);

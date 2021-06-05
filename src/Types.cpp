@@ -3,7 +3,7 @@
  *   FUSCO*
  **********/
 
-#include <Lex.hpp>
+#include <lexer/Lex.hpp>
 #include <Parse.hpp>
 #include <ast/Expression.hpp>
 
@@ -35,11 +35,5 @@ Object Object::NewBool(bool boolean) {
     Object x;
     x.Type = BoolType;
     x.Bool = boolean;
-    return x;
-}
-
-Object Object::Null() {
-    Object x;
-    x.Type = NullType;
     return x;
 }

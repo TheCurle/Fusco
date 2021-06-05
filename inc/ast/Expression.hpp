@@ -3,7 +3,7 @@
  *  FUSCO  *
  ***********/
 #pragma once
-#include <Lex.hpp>
+#include <lexer/Lex.hpp>
 
 template <typename T>
 class BinaryExpression;
@@ -101,7 +101,7 @@ class TreePrinter : public Visitor<Object> {
 public:
     ~TreePrinter() {}
 
-    Object dummy() { return Object::Null(); }
+    Object dummy() { return Object::Null; }
 
     Object print(Expression<Object>* expr);
 

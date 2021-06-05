@@ -4,7 +4,7 @@
  ***********/
 
 #pragma once
-#include <Lex.hpp>
+#include <lexer/Lex.hpp>
 #include <ast/Expression.hpp>
 #include <Main.hpp>
 #include <stdexcept>
