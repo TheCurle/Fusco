@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 #include <Main.hpp>
-#include <Types.hpp>
+#include <interpreter/Types.hpp>
 
 /*
  * A lexeme is the largest representable packet of information that the lexer can output.

@@ -8,6 +8,10 @@
 
 class Object {
     public:
+    Object() {
+        Null.Type = NullType;
+    }
+
     typedef enum {
         StrType,
         NumType,
@@ -28,5 +32,5 @@ class Object {
     static Object NewStr(std::string str);
     static Object NewNum(double num);
     static Object NewBool(bool boolean);
-    static Object Null();
+    static Object Null;
 };

@@ -37,9 +37,3 @@ Object Object::NewBool(bool boolean) {
     x.Bool = boolean;
     return x;
 }
-
-Object Object::Null() {
-    Object x;
-    x.Type = NullType;
-    return x;
-}

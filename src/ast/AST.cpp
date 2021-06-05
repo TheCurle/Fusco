@@ -22,7 +22,7 @@ Object TreePrinter::visitGroupingExpression(GroupingExpression<Object>* expr) {
 
 Object TreePrinter::visitLiteralExpression(LiteralExpression<Object>* expr) {
     if (expr->value.Type == Object::NullType)
-        return Object::Null();
+        return Object::Null;
     return expr->value;
 }
 

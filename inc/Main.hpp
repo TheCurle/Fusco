@@ -6,10 +6,11 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include <interpreter/Errors.hpp>
 
 extern bool ErrorState;
 
-#define INTERP_VERSION "0.2"
+#define INTERP_VERSION "0.9"
 
 class Common {
 public:
@@ -17,6 +18,12 @@ public:
         Report(Line, "", Message);
         ErrorState = true;
     }
+
+    void Error(RuntimeError Error) {
+        Report(Error.Cause.Line, "", Error.Message);
+        ErrorState = true;
+    }
+
 private:
     void Report(size_t Line, std::string Where, std::string Message) {
         std::cout << "[line " << Line << "] Error" << Where << ": " << Message << std::endl;

@@ -101,7 +101,7 @@ class TreePrinter : public Visitor<Object> {
 public:
     ~TreePrinter() {}
 
-    Object dummy() { return Object::Null(); }
+    Object dummy() { return Object::Null; }
 
     Object print(Expression<Object>* expr);
 
