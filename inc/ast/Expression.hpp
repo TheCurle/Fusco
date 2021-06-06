@@ -19,10 +19,10 @@ class LiteralExpression;
 
 
 template <typename T>
-class Visitor {
+class ExpressionVisitor {
 public:
-    Visitor() {}
-    virtual ~Visitor() {};
+    ExpressionVisitor() {}
+    virtual ~ExpressionVisitor() {};
     virtual T dummy() = 0;
     virtual T visitBinaryExpression(BinaryExpression<T>* expr) = 0;
     virtual T visitGroupingExpression(GroupingExpression<T>* expr) = 0;
@@ -37,7 +37,7 @@ public:
     Expression(const Expression&) = delete;
     Expression& operator=(const Expression&) = delete;
     virtual ~Expression() = default;
-    virtual T accept(Visitor<T>* visitor) {
+    virtual T accept(ExpressionVisitor<T>* visitor) {
         return visitor->dummy();
     };
 };
@@ -45,10 +45,10 @@ public:
 template <typename T>
 class BinaryExpression : public Expression<T> {
 public:
-    BinaryExpression(Expression<T>* pLeft, Token pOperator, Expression<T>* pRight)
+    explicit BinaryExpression(Expression<T>* pLeft, Token pOperator, Expression<T>* pRight)
         : left(pLeft), operatorToken(pOperator), right(pRight) {}
 
-    T accept(Visitor<T>* visitor) {
+    T accept(ExpressionVisitor<T>* visitor) override {
         return visitor->visitBinaryExpression(this);
     }
 
@@ -60,10 +60,10 @@ public:
 template <typename T>
 class GroupingExpression : public Expression<T> {
 public:
-    GroupingExpression(Expression<T>* pExpression)
+    explicit GroupingExpression(Expression<T>* pExpression)
         : expression(pExpression) {}
 
-    T accept(Visitor<T>* visitor) {
+    T accept(ExpressionVisitor<T>* visitor) override {
         return visitor->visitGroupingExpression(this);
     }
 
@@ -73,9 +73,9 @@ public:
 template <typename T>
 class LiteralExpression : public Expression<T> {
 public:
-    LiteralExpression(T _value) : value(_value) {}
+    explicit LiteralExpression(T _value) : value(_value) {}
 
-    T accept(Visitor<T>* visitor) {
+    T accept(ExpressionVisitor<T>* visitor) override {
         return visitor->visitLiteralExpression(this);
     }
 
@@ -85,10 +85,10 @@ public:
 template <typename T>
 class UnaryExpression : public Expression<T> {
 public:
-    UnaryExpression(Token pOperator, Expression<T>* pRight)
+    explicit UnaryExpression(Token pOperator, Expression<T>* pRight)
         : operatorToken(pOperator), right(pRight) {}
 
-    T accept(Visitor<T>* visitor) {
+    T accept(ExpressionVisitor<T>* visitor) override {
         return visitor->visitUnaryExpression(this);
     }
 
@@ -96,24 +96,4 @@ public:
     Expression<T>* right;
 };
 
-
-class TreePrinter : public Visitor<Object> {
-public:
-    ~TreePrinter() {}
-
-    Object dummy() { return Object::Null; }
-
-    Object print(Expression<Object>* expr);
-
-    Object visitBinaryExpression(BinaryExpression<Object>* expr);
-
-    Object visitGroupingExpression(GroupingExpression<Object>* expr);
-
-    Object visitLiteralExpression(LiteralExpression<Object>* expr);
-
-    Object visitUnaryExpression(UnaryExpression<Object>* expr);
-private:
-    template <class ... Args>
-    std::string parenthesize(std::string Header, Args ... args);
-};
 

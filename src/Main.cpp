@@ -19,13 +19,14 @@ void lex(std::string text) {
     Lexer tokenStream(text);
     auto tokens = tokenStream.ConsumeAllAndReturn();
     Parser parser(tokens);
-    Expression<Object>* expression = parser.parse();
+    std::vector<Statement*> statements = parser.parse();
 
     if(ErrorState) return;
 
     TreePrinter printer;
-    std::cout << printer.print(expression).ToString() << std::endl;
-    Engine.Interpret(expression);
+    printer.print(statements);
+
+    Engine.Interpret(statements);
 }
 
 int main(int argc, char** argv) {
@@ -33,10 +34,10 @@ int main(int argc, char** argv) {
     // Emulate a REPL (Read, Evaluate, Print, Loop)
     std::cout << "Fusco Interpreter, version " << INTERP_VERSION << std::endl;
     std::cout << "20/05/21, Curle" << std::endl << std::endl;
-    std::cout << "> ";
+    std::cout << "$ ";
     for(std::string line; std::getline(std::cin, line);) {
         lex(line);
-        std::cout << "> ";
+        std::cout << "$ ";
     }
 }
 

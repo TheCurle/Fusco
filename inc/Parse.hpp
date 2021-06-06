@@ -5,7 +5,7 @@
 
 #pragma once
 #include <lexer/Lex.hpp>
-#include <ast/Expression.hpp>
+#include <ast/Statement.hpp>
 #include <Main.hpp>
 #include <stdexcept>
 
@@ -14,7 +14,7 @@ public:
     Parser(std::vector<struct Token> pTokens)
         : tokens(pTokens), currentToken(0) {}
 
-    Expression<Object>* parse();
+    std::vector<Statement*> parse();
 
 private:
     std::vector<struct Token> tokens;
@@ -30,6 +30,10 @@ private:
     bool endOfStream();
 
     /** Statement Parsing **/
+    Statement* statement();
+    Statement* printStatement();
+    Statement* expressionStatement();
+
     Expression<Object>* expression();
     Expression<Object>* equality();
     Expression<Object>* comparison();

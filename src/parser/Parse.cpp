@@ -5,16 +5,34 @@
 
 #include <Parse.hpp>
 
-Expression<Object>* Parser::parse() {
-    try {
-        return expression();
-    }
-    catch(std::runtime_error error) {
-        std::cerr << "Caught error, halting..." << std::endl;
-        //recover();
-        return nullptr;
+std::vector<Statement*> Parser::parse() {
+    std::vector<Statement*> statements;
+
+    while(!endOfStream()) {
+        statements.emplace_back(statement());
     }
 
+    return statements;
+}
+
+Statement* Parser::statement() {
+    if(matchAny(KW_PRINT)) return printStatement();
+
+    return expressionStatement();
+}
+
+Statement* Parser::printStatement() {
+    Expression<Object>* value = expression();
+    verify(LI_SEMICOLON, "Expected ';' after an expression to print");
+
+    return new PrintStatement(value);
+}
+
+Statement* Parser::expressionStatement() {
+    Expression<Object>* value = expression();
+    verify(LI_SEMICOLON, "Expected ';' after an expression.");
+
+    return new ExpressionStatement(value);
 }
 
 Expression<Object>* Parser::expression() {

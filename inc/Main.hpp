@@ -10,7 +10,7 @@
 
 extern bool ErrorState;
 
-#define INTERP_VERSION "0.9"
+#define INTERP_VERSION "1.0"
 
 class Common {
 public:

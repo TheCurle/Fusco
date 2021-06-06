@@ -6,10 +6,25 @@
 #include <string>
 #include <cstdarg>
 #include <initializer_list>
-#include <ast/Expression.hpp>
+#include <interpreter/Interpreter.hpp>
 
-Object TreePrinter::print(Expression<Object>* expr) {
-    return expr->accept(this);
+Object TreePrinter::print(std::vector<Statement*> stmts) {
+    for(auto stmt : stmts) {
+        stmt->accept(this);
+    }
+
+    std::cout << std::endl;
+
+    return Object::Null;
+}
+
+
+void TreePrinter::visitExpression(ExpressionStatement* stmt) {
+    std::cout << "Input resolves to:\t" << parenthesize("expression", &stmt->Expr) << std::endl;
+}
+
+void TreePrinter::visitPrint(PrintStatement* stmt) {
+    std::cout << "Input resolves to:\t" << parenthesize("print", &stmt->Expr) << std::endl;
 }
 
 Object TreePrinter::visitBinaryExpression(BinaryExpression<Object>* expr) {

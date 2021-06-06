@@ -6,15 +6,6 @@
 #include <interpreter/Interpreter.hpp>
 #include <interpreter/Errors.hpp>
 
-void Interpreter::Interpret(Expression<Object>* Expr) {
-    try {
-        Object value = Evaluate(Expr);
-        std::cout << "$ " << Stringify(value) << std::endl;
-    } catch(RuntimeError e) {
-        Common::Error(e);
-    }
-}
-
 Object Interpreter::visitBinaryExpression(BinaryExpression<Object>* expr) {
     Object left = Evaluate(expr->left);
     Object right = Evaluate(expr->right);
