@@ -20,7 +20,7 @@ Statement* Parser::declaration() {
         if(matchAny(KW_VAR)) return varDeclaration();
 
         return statement();
-    } catch (RuntimeError e) {
+    } catch (RuntimeError &e) {
         recover();
         return nullptr;
     }
