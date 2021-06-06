@@ -50,7 +50,7 @@ template <typename T>
 class BinaryExpression : public Expression<T> {
 public:
     explicit BinaryExpression(Expression<T>* pLeft, Token pOperator, Expression<T>* pRight)
-        : left(pLeft), right(pRight), operatorToken(pOperator), {}
+        : left(pLeft), right(pRight), operatorToken(pOperator) {}
 
     T accept(ExpressionVisitor<T>* visitor) override {
         return visitor->visitBinaryExpression(this);
