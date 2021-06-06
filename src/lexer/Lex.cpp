@@ -310,6 +310,7 @@ int Lexer::ReadKeyword(std::string Str) {
         case 'v':
             if(Str.compare("var") == 0)
                 return KW_VAR;
+            break;
 
         case 'w':
             if(Str.compare("while") == 0)
@@ -501,7 +502,7 @@ void Lexer::Advance() {
             } else if(isalpha(Char) || Char == '_') { // This is what defines what a variable/function/keyword can START with.
                 CurrentIdentifier = ReadIdentifier(Char, 255);
 
-                if(TokenType = ReadKeyword(CurrentIdentifier)) {
+                if((TokenType = ReadKeyword(CurrentIdentifier))) {
                     Token->Type = TokenType;
                     break;
                 }
