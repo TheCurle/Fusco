@@ -8,6 +8,7 @@
 
 class ExpressionStatement;
 class PrintStatement;
+class VariableStatement;
 
 class StatementVisitor {
     public:
@@ -15,6 +16,7 @@ class StatementVisitor {
     virtual ~StatementVisitor() = default;
     virtual void visitExpression(ExpressionStatement* Expr) = 0;
     virtual void visitPrint(PrintStatement* Print) = 0;
+    virtual void visitVariable(VariableStatement* Var) = 0;
 };
 
 class Statement {
@@ -41,4 +43,15 @@ class PrintStatement : public Statement {
     }
 
     Expression<Object>* Expr;
+};
+
+class VariableStatement : public Statement {
+    public:
+    explicit VariableStatement(struct Token pName, Expression<Object>* pExpr) : Name(pName), Expr(pExpr) {}
+    void accept(StatementVisitor* visitor) override {
+        visitor->visitVariable(this);
+    }
+
+    Expression<Object>* Expr;
+    struct Token Name;
 };

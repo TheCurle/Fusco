@@ -17,6 +17,9 @@ class GroupingExpression;
 template <typename T>
 class LiteralExpression;
 
+template <typename T>
+class VariableExpression;
+
 
 template <typename T>
 class ExpressionVisitor {
@@ -28,6 +31,7 @@ public:
     virtual T visitGroupingExpression(GroupingExpression<T>* expr) = 0;
     virtual T visitUnaryExpression(UnaryExpression<T>* expr) = 0;
     virtual T visitLiteralExpression(LiteralExpression<T>* expr) = 0;
+    virtual T visitVariableExpression(VariableExpression<T>* expr) = 0;
 };
 
 template <typename T>
@@ -96,4 +100,14 @@ public:
     Expression<T>* right;
 };
 
+template <typename T>
+class VariableExpression : public Expression<T> {
+public:
+    explicit VariableExpression(Token name) : Name(name) {}
 
+    T accept(ExpressionVisitor<T>* visitor) override {
+        return visitor->visitVariableExpression(this);
+    }
+
+    struct Token Name;
+};
