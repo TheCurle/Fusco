@@ -9,10 +9,33 @@ std::vector<Statement*> Parser::parse() {
     std::vector<Statement*> statements;
 
     while(!endOfStream()) {
-        statements.emplace_back(statement());
+        statements.emplace_back(declaration());
     }
 
     return statements;
+}
+
+Statement* Parser::declaration() {
+    try {
+        if(matchAny(KW_VAR)) return varDeclaration();
+
+        return statement();
+    } catch (RuntimeError e) {
+        recover();
+        return nullptr;
+    }
+}
+
+Statement* Parser::varDeclaration() {
+    struct Token name = verify(LI_IDENTIFIER, "Expected variable name.");
+
+    Expression<Object>* initializer = nullptr;
+    if(matchAny(LI_EQUAL)) {
+        initializer = expression();
+    }
+
+    verify(LI_SEMICOLON, "Expected a semicolon after a variable declaration.");
+    return new VariableStatement(name, initializer);
 }
 
 Statement* Parser::statement() {
@@ -107,6 +130,9 @@ Expression<Object>* Parser::primary() {
 
     if(matchAny(LI_STRING))
         return new LiteralExpression<Object>(Object::NewStr(previous().Lexeme));
+
+    if(matchAny(LI_IDENTIFIER))
+        return new VariableExpression<Object>(previous());
 
     if(matchAny(LI_LPAREN)) {
         Expression<Object>* expr = expression();

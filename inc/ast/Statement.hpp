@@ -47,7 +47,7 @@ class PrintStatement : public Statement {
 
 class VariableStatement : public Statement {
     public:
-    explicit VariableStatement(struct Token pName, Expression<Object>* pExpr) : Name(pName), Expr(pExpr) {}
+    explicit VariableStatement(struct Token pName, Expression<Object>* pExpr) : Expr(pExpr), Name(pName) {}
     void accept(StatementVisitor* visitor) override {
         visitor->visitVariable(this);
     }

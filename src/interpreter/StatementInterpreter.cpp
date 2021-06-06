@@ -29,3 +29,12 @@ void Interpreter::visitPrint(PrintStatement* stmt) {
     Object value = Evaluate(stmt->Expr);
     std::cout << "% " << Stringify(value) << std::endl;
 }
+
+void Interpreter::visitVariable(VariableStatement* stmt) {
+    Object value = Object::Null;
+    if(stmt->Expr != nullptr) {
+        value = Evaluate(stmt->Expr);
+    }
+
+    Environment.define(stmt->Name.Lexeme, value);
+}

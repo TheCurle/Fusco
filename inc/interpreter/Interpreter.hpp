@@ -3,7 +3,28 @@
  *  FUSCO  *
  ***********/
 #pragma once
+#include <map>
+#include <algorithm>
 #include <ast/Statement.hpp>
+
+class ExecutionContext {
+    public:
+
+    Object get(struct Token name) {
+        try {
+            return ObjectMap.at(name.Lexeme);
+        } catch (std::out_of_range e) {
+            throw RuntimeError(name, std::string("Undefined variable ").append(name.Lexeme));
+        }
+    }
+
+    void define(std::string name, Object obj) {
+        ObjectMap.emplace(name, obj);
+    }
+
+    private:
+    std::map<std::string, Object> ObjectMap;
+};
 
 class Interpreter : public ExpressionVisitor<Object>,
                     public StatementVisitor,
@@ -21,14 +42,19 @@ public:
 
     void visitPrint(PrintStatement* stmt);
 
+    void visitVariable(VariableStatement* stmt);
+
     Object visitBinaryExpression(BinaryExpression<Object>* expr);
 
     Object visitGroupingExpression(GroupingExpression<Object>* expr);
 
     Object visitLiteralExpression(LiteralExpression<Object>* expr);
 
+    Object visitVariableExpression(VariableExpression<Object>* expr);
+
     Object visitUnaryExpression(UnaryExpression<Object>* expr);
 private:
+    ExecutionContext Environment;
 
     void Execute(Statement* stmt);
     Object Evaluate(Expression<Object>* expr);
@@ -56,11 +82,15 @@ public:
 
     void visitPrint(PrintStatement* stmt) override;
 
+    void visitVariable(VariableStatement* stmt) override;
+
     Object visitBinaryExpression(BinaryExpression<Object>* expr);
 
     Object visitGroupingExpression(GroupingExpression<Object>* expr);
 
     Object visitLiteralExpression(LiteralExpression<Object>* expr);
+
+    Object visitVariableExpression(VariableExpression<Object>* expr);
 
     Object visitUnaryExpression(UnaryExpression<Object>* expr);
 private:

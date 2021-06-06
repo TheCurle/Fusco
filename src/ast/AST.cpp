@@ -27,6 +27,10 @@ void TreePrinter::visitPrint(PrintStatement* stmt) {
     std::cout << "Input resolves to:\t" << parenthesize("print", &stmt->Expr) << std::endl;
 }
 
+void TreePrinter::visitVariable(VariableStatement* stmt) {
+    std::cout << "Input resolves to:\t" << parenthesize(std::string("(variable ").append(stmt->Name.Lexeme).append(")"), &stmt->Expr);
+}
+
 Object TreePrinter::visitBinaryExpression(BinaryExpression<Object>* expr) {
     return Object::NewStr(parenthesize(expr->operatorToken.Lexeme, &expr->left, &expr->right));
 }
@@ -39,6 +43,10 @@ Object TreePrinter::visitLiteralExpression(LiteralExpression<Object>* expr) {
     if (expr->value.Type == Object::NullType)
         return Object::Null;
     return expr->value;
+}
+
+Object TreePrinter::visitVariableExpression(VariableExpression<Object>* expr) {
+    return Object::NewStr(std::string("(var ").append(expr->Name.Lexeme).append(")"));
 }
 
 Object TreePrinter::visitUnaryExpression(UnaryExpression<Object>* expr) {

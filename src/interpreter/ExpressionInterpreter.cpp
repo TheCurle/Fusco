@@ -62,6 +62,10 @@ Object Interpreter::visitLiteralExpression(LiteralExpression<Object>* expr) {
     return expr->value;
 }
 
+Object Interpreter::visitVariableExpression(VariableExpression<Object>* expr) {
+    return Environment.get(expr->Name);
+}
+
 Object Interpreter::visitUnaryExpression(UnaryExpression<Object>* expr) {
     Object right = Evaluate(expr->right);
 

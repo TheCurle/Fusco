@@ -30,6 +30,8 @@ private:
     bool endOfStream();
 
     /** Statement Parsing **/
+    Statement* declaration();
+    Statement* varDeclaration();
     Statement* statement();
     Statement* printStatement();
     Statement* expressionStatement();
