@@ -10,6 +10,7 @@
 
 extern bool ErrorState;
 
+#define UNUSED(x) (void)(x)
 #define INTERP_VERSION "1.0"
 
 class Common {

@@ -30,6 +30,8 @@ void lex(std::string text) {
 }
 
 int main(int argc, char** argv) {
+    UNUSED(argc); UNUSED(argv);
+
     Object::Null.Type = Object::NullType;
     // Emulate a REPL (Read, Evaluate, Print, Loop)
     std::cout << "Fusco Interpreter, version " << INTERP_VERSION << std::endl;

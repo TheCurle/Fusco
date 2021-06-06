@@ -13,7 +13,7 @@ class ExecutionContext {
     Object get(struct Token name) {
         try {
             return ObjectMap.at(name.Lexeme);
-        } catch (std::out_of_range e) {
+        } catch (std::out_of_range &e) {
             throw RuntimeError(name, std::string("Undefined variable ").append(name.Lexeme));
         }
     }
