@@ -12,7 +12,7 @@ void Interpreter::Interpret(std::vector<Statement*> statements) {
         for(auto value: statements) {
             Execute(value);
         }
-    } catch (RuntimeError e) {
+    } catch (RuntimeError &e) {
         Error(e);
     }
 }
