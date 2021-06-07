@@ -30,16 +30,29 @@ void lex(std::string text) {
 }
 
 int main(int argc, char** argv) {
-    UNUSED(argc); UNUSED(argv);
 
     Object::Null.Type = Object::NullType;
-    // Emulate a REPL (Read, Evaluate, Print, Loop)
+
     std::cout << "Fusco Interpreter, version " << INTERP_VERSION << std::endl;
-    std::cout << "20/05/21, Curle" << std::endl << std::endl;
-    std::cout << "$ ";
-    for(std::string line; std::getline(std::cin, line);) {
-        lex(line);
+    std::cout << "20/05/21, Curle" << std::endl
+                  << std::endl;
+
+    if (argc < 2) {
+        // Emulate a REPL (Read, Evaluate, Print, Loop)
         std::cout << "$ ";
+        for (std::string line; std::getline(std::cin, line);) {
+            ErrorState = false;
+            lex(line);
+            std::cout << "$ ";
+        }
+    } else {
+        // Read and run the given file.
+        std::ifstream File(argv[1]);
+
+        std::string str((std::istreambuf_iterator<char>(File)),
+                 std::istreambuf_iterator<char>());
+
+        lex(str);
     }
 }
 

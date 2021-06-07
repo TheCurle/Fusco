@@ -9,6 +9,7 @@
 class ExpressionStatement;
 class PrintStatement;
 class VariableStatement;
+class BlockStatement;
 
 class StatementVisitor {
     public:
@@ -17,6 +18,7 @@ class StatementVisitor {
     virtual void visitExpression(ExpressionStatement* Expr) = 0;
     virtual void visitPrint(PrintStatement* Print) = 0;
     virtual void visitVariable(VariableStatement* Var) = 0;
+    virtual void visitBlock(BlockStatement* Block) = 0;
 };
 
 class Statement {
@@ -54,4 +56,14 @@ class VariableStatement : public Statement {
 
     Expression<Object>* Expr;
     struct Token Name;
+};
+
+class BlockStatement : public Statement {
+    public:
+    explicit BlockStatement(std::vector<Statement*> statements) : Statements(statements) {}
+    void accept(StatementVisitor* visitor) override {
+        visitor->visitBlock(this);
+    }
+
+    std::vector<Statement*> Statements;
 };

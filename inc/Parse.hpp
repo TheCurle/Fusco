@@ -30,6 +30,7 @@ private:
     bool endOfStream();
 
     /** Statement Parsing **/
+    std::vector<Statement*> block();
     Statement* declaration();
     Statement* varDeclaration();
     Statement* statement();

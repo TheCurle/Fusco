@@ -40,8 +40,20 @@ Statement* Parser::varDeclaration() {
 
 Statement* Parser::statement() {
     if(matchAny(KW_PRINT)) return printStatement();
+    if(matchAny(LI_LBRACE)) return new BlockStatement(block());
 
     return expressionStatement();
+}
+
+std::vector<Statement*> Parser::block() {
+    std::vector<Statement*> statements;
+
+    while(!check(LI_RBRACE) && !endOfStream()) {
+        statements.emplace_back(declaration());
+    }
+
+    verify(LI_RBRACE, "Unclosed block statement");
+    return statements;
 }
 
 Statement* Parser::printStatement() {

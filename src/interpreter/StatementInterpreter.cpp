@@ -38,3 +38,19 @@ void Interpreter::visitVariable(VariableStatement* stmt) {
 
     Environment.define(stmt->Name, value);
 }
+
+void Interpreter::visitBlock(BlockStatement* stmt) {
+    ExecuteBlock(stmt->Statements, new ExecutionContext(Environment));
+}
+
+void Interpreter::ExecuteBlock(std::vector<Statement*> statements, ExecutionContext environment) {
+    ExecutionContext previous = this->Environment;
+
+    this->Environment = environment;
+
+    for(Statement* stmt : statements) {
+        Execute(stmt);
+    }
+
+    this->Environment = previous;
+}

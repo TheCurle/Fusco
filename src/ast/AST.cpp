@@ -28,7 +28,16 @@ void TreePrinter::visitPrint(PrintStatement* stmt) {
 }
 
 void TreePrinter::visitVariable(VariableStatement* stmt) {
-    std::cout << "Input resolves to:\t" << parenthesize(std::string("(variable ").append(stmt->Name.Lexeme).append(")"), &stmt->Expr);
+    std::cout << "Input resolves to:\t" << parenthesize(std::string("(variable ").append(stmt->Name.Lexeme).append(")"), &stmt->Expr) << std::endl;
+}
+
+void TreePrinter::visitBlock(BlockStatement* stmt) {
+    std::cout << "Block starts:" << std::endl;
+    for(Statement* inner : stmt->Statements) {
+        std::cout << "\t -> ";
+        inner->accept(this);
+    }
+    std::cout << "\t -> Block ends." << std::endl;
 }
 
 Object TreePrinter::visitBinaryExpression(BinaryExpression<Object>* expr) {
