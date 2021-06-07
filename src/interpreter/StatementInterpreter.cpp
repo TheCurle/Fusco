@@ -36,5 +36,5 @@ void Interpreter::visitVariable(VariableStatement* stmt) {
         value = Evaluate(stmt->Expr);
     }
 
-    Environment.define(stmt->Name.Lexeme, value);
+    Environment.define(stmt->Name, value);
 }

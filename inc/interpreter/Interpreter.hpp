@@ -18,8 +18,14 @@ class ExecutionContext {
         }
     }
 
-    void define(std::string name, Object obj) {
-        ObjectMap.emplace(name, obj);
+    void define(struct Token name, Object obj) {
+        std::map<std::string, Object>::iterator it =
+            ObjectMap.find(name.Lexeme);
+
+        if (it != ObjectMap.end())
+            throw RuntimeError(name, std::string("Redefinition of variable ").append(name.Lexeme));
+
+        ObjectMap.emplace(name.Lexeme, obj);
     }
 
     void assign(Token name, Object value) {
