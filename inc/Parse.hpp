@@ -37,6 +37,7 @@ private:
     Statement* expressionStatement();
 
     Expression<Object>* expression();
+    Expression<Object>* assignment();
     Expression<Object>* equality();
     Expression<Object>* comparison();
     Expression<Object>* term();

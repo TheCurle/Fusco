@@ -59,7 +59,25 @@ Statement* Parser::expressionStatement() {
 }
 
 Expression<Object>* Parser::expression() {
-    return equality();
+    return assignment();
+}
+
+Expression<Object>* Parser::assignment() {
+    Expression<Object>* expr = equality();
+
+    if(matchAny(LI_EQUAL)) {
+        Token equals = previous();
+        Expression<Object>* value = assignment();
+
+        if(dynamic_cast<VariableExpression<Object>*>(expr) != nullptr) {
+            Token name = dynamic_cast<VariableExpression<Object>*>(expr)->Name;
+            return new AssignmentExpression<Object>(name, value);
+        }
+
+        Error(equals, std::string("Cannot assign an r-value"));
+    }
+
+    return expr;
 }
 
 Expression<Object>* Parser::equality() {

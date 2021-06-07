@@ -66,6 +66,12 @@ Object Interpreter::visitVariableExpression(VariableExpression<Object>* expr) {
     return Environment.get(expr->Name);
 }
 
+Object Interpreter::visitAssignmentExpression(AssignmentExpression<Object>* expr) {
+    Object value = Evaluate(expr->Expr);
+    Environment.assign(expr->Name, value);
+    return value;
+}
+
 Object Interpreter::visitUnaryExpression(UnaryExpression<Object>* expr) {
     Object right = Evaluate(expr->right);
 

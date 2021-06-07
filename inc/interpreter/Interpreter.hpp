@@ -22,6 +22,16 @@ class ExecutionContext {
         ObjectMap.emplace(name, obj);
     }
 
+    void assign(Token name, Object value) {
+        std::map<std::string, Object>::iterator it =
+            ObjectMap.find(name.Lexeme);
+
+        if (it != ObjectMap.end())
+            it->second = value;
+        else
+            throw RuntimeError(name, std::string("Undefined variable '").append(name.Lexeme).append("'"));
+    }
+
     private:
     std::map<std::string, Object> ObjectMap;
 };
@@ -51,6 +61,8 @@ public:
     Object visitLiteralExpression(LiteralExpression<Object>* expr);
 
     Object visitVariableExpression(VariableExpression<Object>* expr);
+
+    Object visitAssignmentExpression(AssignmentExpression<Object>* expr);
 
     Object visitUnaryExpression(UnaryExpression<Object>* expr);
 private:
@@ -91,6 +103,8 @@ public:
     Object visitLiteralExpression(LiteralExpression<Object>* expr);
 
     Object visitVariableExpression(VariableExpression<Object>* expr);
+
+    Object visitAssignmentExpression(AssignmentExpression<Object>* expr);
 
     Object visitUnaryExpression(UnaryExpression<Object>* expr);
 private:

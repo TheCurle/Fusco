@@ -20,6 +20,9 @@ class LiteralExpression;
 template <typename T>
 class VariableExpression;
 
+template <typename T>
+class AssignmentExpression;
+
 
 template <typename T>
 class ExpressionVisitor {
@@ -32,6 +35,7 @@ public:
     virtual T visitUnaryExpression(UnaryExpression<T>* expr) = 0;
     virtual T visitLiteralExpression(LiteralExpression<T>* expr) = 0;
     virtual T visitVariableExpression(VariableExpression<T>* expr) = 0;
+    virtual T visitAssignmentExpression(AssignmentExpression<T>* expr) = 0;
 };
 
 template <typename T>
@@ -110,4 +114,18 @@ public:
     }
 
     struct Token Name;
+};
+
+template <typename T>
+class AssignmentExpression : public Expression<T> {
+public:
+    explicit AssignmentExpression(Token name, Expression<T>* expr) :
+        Name(name), Expr(expr) {}
+
+    T accept(ExpressionVisitor<T>* visitor) override {
+        return visitor->visitAssignmentExpression(this);
+    }
+
+    struct Token Name;
+    Expression<T>* Expr;
 };

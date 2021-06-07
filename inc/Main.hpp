@@ -11,10 +11,15 @@
 extern bool ErrorState;
 
 #define UNUSED(x) (void)(x)
-#define INTERP_VERSION "1.0"
+#define INTERP_VERSION "1.1"
 
 class Common {
 public:
+    void Error(Token Cause, std::string Message) {
+        Report(Cause.Line, "", Message);
+        ErrorState = true;
+    }
+
     void Error(size_t Line, std::string Message) {
         Report(Line, "", Message);
         ErrorState = true;

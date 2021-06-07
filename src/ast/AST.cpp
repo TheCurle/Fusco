@@ -49,6 +49,10 @@ Object TreePrinter::visitVariableExpression(VariableExpression<Object>* expr) {
     return Object::NewStr(std::string("(var ").append(expr->Name.Lexeme).append(")"));
 }
 
+Object TreePrinter::visitAssignmentExpression(AssignmentExpression<Object>* expr) {
+    return Object::NewStr(parenthesize(std::string("(assign ").append(expr->Name.Lexeme).append(")"), &expr->Expr));
+}
+
 Object TreePrinter::visitUnaryExpression(UnaryExpression<Object>* expr) {
     return Object::NewStr(parenthesize(expr->operatorToken.Lexeme, &expr->right));
 }
