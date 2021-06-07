@@ -31,6 +31,18 @@ void TreePrinter::visitVariable(VariableStatement* stmt) {
     std::cout << "Input resolves to:\t" << parenthesize(std::string("(variable ").append(stmt->Name.Lexeme).append(")"), &stmt->Expr) << std::endl;
 }
 
+void TreePrinter::visitIf(IfStatement* stmt) {
+    std::cout << "Conditional branch:\n\tCondition: -> " << parenthesize("", &stmt->Condition) << std::endl;
+    std::cout << "\tThen: -> ";
+    stmt->Then->accept(this);
+    std::cout << "\tElse: -> ";
+    if(stmt->Else != nullptr)
+        stmt->Else->accept(this);
+    else
+        std::cout << "Not specified";
+    std::cout << std::endl;
+}
+
 void TreePrinter::visitBlock(BlockStatement* stmt) {
     std::cout << "Block starts:" << std::endl;
     for(Statement* inner : stmt->Statements) {

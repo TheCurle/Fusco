@@ -39,6 +39,14 @@ void Interpreter::visitVariable(VariableStatement* stmt) {
     Environment.define(stmt->Name, value);
 }
 
+void Interpreter::visitIf(IfStatement* stmt) {
+    if(Truthy(Evaluate(stmt->Condition)))
+        Execute(stmt->Then);
+    else if(stmt->Else != nullptr) {
+        Execute(stmt->Else);
+    }
+}
+
 void Interpreter::visitBlock(BlockStatement* stmt) {
     ExecuteBlock(stmt->Statements, new ExecutionContext(Environment));
 }

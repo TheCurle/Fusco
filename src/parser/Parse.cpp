@@ -39,6 +39,7 @@ Statement* Parser::varDeclaration() {
 }
 
 Statement* Parser::statement() {
+    if(matchAny(KW_IF)) return ifStatement();
     if(matchAny(KW_PRINT)) return printStatement();
     if(matchAny(LI_LBRACE)) return new BlockStatement(block());
 
@@ -61,6 +62,20 @@ Statement* Parser::printStatement() {
     verify(LI_SEMICOLON, "Expected ';' after an expression to print");
 
     return new PrintStatement(value);
+}
+
+Statement* Parser::ifStatement() {
+    verify(LI_LPAREN, "Expected a ( after if.");
+    Expression<Object>* Condition = expression();
+    verify(LI_RPAREN, "Expected a ) after the condition in if.");
+
+    Statement* Then = statement();
+    Statement* Else = nullptr;
+
+    if(matchAny(KW_ELSE))
+        Else = statement();
+
+    return new IfStatement(Condition, Then, Else);
 }
 
 Statement* Parser::expressionStatement() {

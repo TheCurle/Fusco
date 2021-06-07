@@ -73,6 +73,8 @@ public:
 
     void visitVariable(VariableStatement* stmt);
 
+    void visitIf(IfStatement* stmt);
+
     void visitBlock(BlockStatement* stmt);
 
     Object visitBinaryExpression(BinaryExpression<Object>* expr);
@@ -119,7 +121,9 @@ public:
 
     void visitVariable(VariableStatement* stmt) override;
 
-    void visitBlock(BlockStatement* stmt);
+    void visitIf(IfStatement* stmt) override;
+
+    void visitBlock(BlockStatement* stmt) override;
 
     Object visitBinaryExpression(BinaryExpression<Object>* expr);
 

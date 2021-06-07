@@ -35,6 +35,7 @@ private:
     Statement* varDeclaration();
     Statement* statement();
     Statement* printStatement();
+    Statement* ifStatement();
     Statement* expressionStatement();
 
     Expression<Object>* expression();

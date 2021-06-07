@@ -10,6 +10,7 @@ class ExpressionStatement;
 class PrintStatement;
 class VariableStatement;
 class BlockStatement;
+class IfStatement;
 
 class StatementVisitor {
     public:
@@ -19,6 +20,7 @@ class StatementVisitor {
     virtual void visitPrint(PrintStatement* Print) = 0;
     virtual void visitVariable(VariableStatement* Var) = 0;
     virtual void visitBlock(BlockStatement* Block) = 0;
+    virtual void visitIf(IfStatement* If) = 0;
 };
 
 class Statement {
@@ -66,4 +68,18 @@ class BlockStatement : public Statement {
     }
 
     std::vector<Statement*> Statements;
+};
+
+class IfStatement : public Statement {
+    public:
+    explicit IfStatement(Expression<Object>* pCondition, Statement* pThen, Statement* pElse)
+        : Condition(pCondition), Then(pThen), Else(pElse) {}
+
+    void accept(StatementVisitor* visitor) override {
+        visitor->visitIf(this);
+    }
+
+    Expression<Object>* Condition;
+    Statement* Then;
+    Statement* Else;
 };
