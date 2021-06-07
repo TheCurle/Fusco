@@ -88,6 +88,8 @@ public:
     Object visitAssignmentExpression(AssignmentExpression<Object>* expr);
 
     Object visitUnaryExpression(UnaryExpression<Object>* expr);
+
+    Object visitLogicalExpression(LogicalExpression<Object>* expr);
 private:
     ExecutionContext Environment;
 
@@ -136,6 +138,8 @@ public:
     Object visitAssignmentExpression(AssignmentExpression<Object>* expr);
 
     Object visitUnaryExpression(UnaryExpression<Object>* expr);
+
+    Object visitLogicalExpression(LogicalExpression<Object>* expr);
 private:
     template <class ... Args>
     std::string parenthesize(std::string Header, Args ... args);

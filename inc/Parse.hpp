@@ -40,6 +40,8 @@ private:
 
     Expression<Object>* expression();
     Expression<Object>* assignment();
+    Expression<Object>* orExpr();
+    Expression<Object>* andExpr();
     Expression<Object>* equality();
     Expression<Object>* comparison();
     Expression<Object>* term();
@@ -49,7 +51,7 @@ private:
 
     /** Error management **/
     struct Token verify(Lexeme type, std::string error);
-    std::runtime_error error(struct Token token, std::string message);
+    RuntimeError error(struct Token token, std::string message);
 
     void recover();
 };

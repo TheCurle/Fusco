@@ -251,6 +251,11 @@ std::string Lexer::ReadStringLiteral() {
  */
 int Lexer::ReadKeyword(std::string Str) {
     switch(Str.at(0)) {
+        case 'a':
+            if(Str.compare("and") == 0)
+                return KW_AND;
+            break;
+
         case 'c':
             if(Str.compare("class") == 0)
                 return KW_CLASS;
@@ -283,6 +288,11 @@ int Lexer::ReadKeyword(std::string Str) {
             if(Str.compare("if") == 0)
                 return KW_IF;
 
+            break;
+
+        case 'o':
+            if(Str.compare("or") == 0)
+                return KW_OR;
             break;
 
         case 'p':
@@ -504,6 +514,7 @@ void Lexer::Advance() {
 
                 if((TokenType = ReadKeyword(CurrentIdentifier))) {
                     Token->Type = TokenType;
+                    Token->Lexeme = CurrentIdentifier;
                     break;
                 }
 

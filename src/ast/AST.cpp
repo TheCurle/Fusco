@@ -78,6 +78,10 @@ Object TreePrinter::visitUnaryExpression(UnaryExpression<Object>* expr) {
     return Object::NewStr(parenthesize(expr->operatorToken.Lexeme, &expr->right));
 }
 
+Object TreePrinter::visitLogicalExpression(LogicalExpression<Object>* expr) {
+    return Object::NewStr(parenthesize(expr->operatorToken.Lexeme, &expr->Left, &expr->Right));
+}
+
 template <class... Args>
 std::string TreePrinter::parenthesize(std::string Header, Args... args) {
     std::string builder("(");

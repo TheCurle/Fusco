@@ -83,6 +83,18 @@ Object Interpreter::visitUnaryExpression(UnaryExpression<Object>* expr) {
     return Object::Null;
 }
 
+Object Interpreter::visitLogicalExpression(LogicalExpression<Object>* expr) {
+    Object left = Evaluate(expr->Left);
+
+    if(expr->operatorToken.Type == KW_OR) {
+        if(Truthy(left)) return left;
+    } else {
+        if(!Truthy(left)) return left;
+    }
+
+    return Evaluate(expr->Right);
+}
+
 Object Interpreter::Evaluate(Expression<Object>* expr) {
     return expr->accept(this);
 }

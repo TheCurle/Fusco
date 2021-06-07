@@ -23,6 +23,9 @@ class VariableExpression;
 template <typename T>
 class AssignmentExpression;
 
+template <typename T>
+class LogicalExpression;
+
 
 template <typename T>
 class ExpressionVisitor {
@@ -36,6 +39,7 @@ public:
     virtual T visitLiteralExpression(LiteralExpression<T>* expr) = 0;
     virtual T visitVariableExpression(VariableExpression<T>* expr) = 0;
     virtual T visitAssignmentExpression(AssignmentExpression<T>* expr) = 0;
+    virtual T visitLogicalExpression(LogicalExpression<T>* expr) = 0;
 };
 
 template <typename T>
@@ -128,4 +132,19 @@ public:
 
     struct Token Name;
     Expression<T>* Expr;
+};
+
+template <typename T>
+class LogicalExpression : public Expression<T> {
+public:
+    explicit LogicalExpression(Expression<T>* pLeft, Token pOperator, Expression<T>* pRight)
+         : Left(pLeft), operatorToken(pOperator), Right(pRight) {}
+
+    T accept(ExpressionVisitor<T>* visitor) override {
+        return visitor->visitLogicalExpression(this);
+    }
+
+    Expression<T>* Left;
+    Token operatorToken;
+    Expression<T>* Right;
 };

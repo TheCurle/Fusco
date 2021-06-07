@@ -21,7 +21,8 @@ Statement* Parser::declaration() {
 
         return statement();
     } catch (RuntimeError &e) {
-        recover();
+        //recover();
+        Error(e);
         return nullptr;
     }
 }
@@ -90,7 +91,7 @@ Expression<Object>* Parser::expression() {
 }
 
 Expression<Object>* Parser::assignment() {
-    Expression<Object>* expr = equality();
+    Expression<Object>* expr = orExpr();
 
     if(matchAny(LI_EQUAL)) {
         Token equals = previous();
@@ -102,6 +103,30 @@ Expression<Object>* Parser::assignment() {
         }
 
         Error(equals, std::string("Cannot assign an r-value"));
+    }
+
+    return expr;
+}
+
+Expression<Object>* Parser::orExpr() {
+    Expression<Object>* expr = andExpr();
+
+    while(matchAny(KW_OR)) {
+        Token operatorToken = previous();
+        Expression<Object>* right = andExpr();
+        expr = new LogicalExpression<Object>(expr, operatorToken, right);
+    }
+
+    return expr;
+}
+
+Expression<Object>* Parser::andExpr() {
+    Expression<Object>* expr = equality();
+
+    while(matchAny(KW_AND)) {
+        Token operatorToken = previous();
+        Expression<Object>* right = equality();
+        expr = new LogicalExpression<Object>(expr, operatorToken, right);
     }
 
     return expr;
@@ -188,11 +213,11 @@ Expression<Object>* Parser::primary() {
     throw error(peek(), "Expected an expression");
 }
 
-std::runtime_error Parser::error(struct Token token, std::string message) {
+RuntimeError Parser::error(struct Token token, std::string message) {
     if (token.Type == LI_EOF) {
-        return std::runtime_error(std::to_string(token.Line) + " at end" + message);
+        return RuntimeError(token, std::to_string(token.Line) + " at end" + message);
     } else {
-        return std::runtime_error(std::to_string(token.Line) + " at '" + token.Lexeme + "'" + message);
+        return RuntimeError(token, std::to_string(token.Line) + " at '" + token.Lexeme + "'" + message);
     }
 }
 
