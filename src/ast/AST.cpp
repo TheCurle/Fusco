@@ -43,6 +43,13 @@ void TreePrinter::visitIf(IfStatement* stmt) {
     std::cout << std::endl;
 }
 
+void TreePrinter::visitWhile(WhileStatement* stmt) {
+    std::cout << "While loop:\n\tCondition: -> " << parenthesize("", &stmt->Condition) << std::endl;
+    std::cout << "\tBody: -> ";
+    stmt->Body->accept(this);
+    std::cout << std::endl;
+}
+
 void TreePrinter::visitBlock(BlockStatement* stmt) {
     std::cout << "Block starts:" << std::endl;
     for(Statement* inner : stmt->Statements) {

@@ -41,6 +41,7 @@ Statement* Parser::varDeclaration() {
 
 Statement* Parser::statement() {
     if(matchAny(KW_IF)) return ifStatement();
+    if(matchAny(KW_WHILE)) return whileStatement();
     if(matchAny(KW_PRINT)) return printStatement();
     if(matchAny(LI_LBRACE)) return new BlockStatement(block());
 
@@ -77,6 +78,16 @@ Statement* Parser::ifStatement() {
         Else = statement();
 
     return new IfStatement(Condition, Then, Else);
+}
+
+Statement* Parser::whileStatement() {
+    verify(LI_LPAREN, "Expected a ( after while.");
+    Expression<Object>* condition = expression();
+    verify(LI_RPAREN, "Expected a ) after the condition in while.");
+
+    Statement* body = statement();
+
+    return new WhileStatement(condition, body);
 }
 
 Statement* Parser::expressionStatement() {

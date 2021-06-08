@@ -19,15 +19,14 @@ class ExecutionContext {
     }
 
     Object get(struct Token name) {
-        try {
-            std::map<std::string, Object>::iterator it = ObjectMap.find(name.Lexeme);
-            if(it == ObjectMap.end()) // If variable not in current context, search deeper
-                return Enclosing->get(name);
-
+        std::map<std::string, Object>::iterator it = ObjectMap.find(name.Lexeme);
+        if(it != ObjectMap.end()) // If variable not in current context, search deeper
             return ObjectMap.at(name.Lexeme);
-        } catch (std::out_of_range &e) {
-            throw RuntimeError(name, std::string("Undefined variable ").append(name.Lexeme));
-        }
+
+        if(Enclosing != nullptr)
+            return Enclosing->get(name);
+
+        throw RuntimeError(name, std::string("Unable to find variable ").append(name.Lexeme));
     }
 
     void define(struct Token name, Object obj) {
@@ -41,13 +40,14 @@ class ExecutionContext {
     }
 
     void assign(Token name, Object value) {
-        std::map<std::string, Object>::iterator it =
-            ObjectMap.find(name.Lexeme);
-
-        if (it != ObjectMap.end())
+        std::map<std::string, Object>::iterator it = ObjectMap.find(name.Lexeme);
+        if(it != ObjectMap.end()) { // If variable not in current context, search deeper
             it->second = value;
-        else
-            throw RuntimeError(name, std::string("Undefined variable '").append(name.Lexeme).append("'"));
+        }
+
+        if(Enclosing != nullptr) {
+            Enclosing->assign(name, value);
+        }
     }
 
     private:
@@ -74,6 +74,8 @@ public:
     void visitVariable(VariableStatement* stmt);
 
     void visitIf(IfStatement* stmt);
+
+    void visitWhile(WhileStatement* stmt);
 
     void visitBlock(BlockStatement* stmt);
 
@@ -124,6 +126,8 @@ public:
     void visitVariable(VariableStatement* stmt) override;
 
     void visitIf(IfStatement* stmt) override;
+
+    void visitWhile(WhileStatement* stmt);
 
     void visitBlock(BlockStatement* stmt) override;
 

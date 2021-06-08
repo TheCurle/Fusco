@@ -47,12 +47,18 @@ void Interpreter::visitIf(IfStatement* stmt) {
     }
 }
 
+void Interpreter::visitWhile(WhileStatement* stmt) {
+    while(Truthy(Evaluate(stmt->Condition))) {
+        Execute(stmt->Body);
+    }
+}
+
 void Interpreter::visitBlock(BlockStatement* stmt) {
     ExecuteBlock(stmt->Statements, new ExecutionContext(Environment));
 }
 
 void Interpreter::ExecuteBlock(std::vector<Statement*> statements, ExecutionContext environment) {
-    ExecutionContext previous = this->Environment;
+    ExecutionContext* previous = &this->Environment;
 
     this->Environment = environment;
 
@@ -60,5 +66,5 @@ void Interpreter::ExecuteBlock(std::vector<Statement*> statements, ExecutionCont
         Execute(stmt);
     }
 
-    this->Environment = previous;
+    this->Environment = *previous;
 }

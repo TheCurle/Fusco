@@ -11,6 +11,8 @@ class PrintStatement;
 class VariableStatement;
 class BlockStatement;
 class IfStatement;
+class WhileStatement;
+class ForStatement;
 
 class StatementVisitor {
     public:
@@ -21,6 +23,7 @@ class StatementVisitor {
     virtual void visitVariable(VariableStatement* Var) = 0;
     virtual void visitBlock(BlockStatement* Block) = 0;
     virtual void visitIf(IfStatement* If) = 0;
+    virtual void visitWhile(WhileStatement* While) = 0;
 };
 
 class Statement {
@@ -82,4 +85,17 @@ class IfStatement : public Statement {
     Expression<Object>* Condition;
     Statement* Then;
     Statement* Else;
+};
+
+class WhileStatement : public Statement {
+    public:
+    explicit WhileStatement(Expression<Object>* pCondition, Statement* pBody)
+        : Condition(pCondition), Body(pBody) {}
+
+    void accept(StatementVisitor* visitor) override {
+        visitor->visitWhile(this);
+    }
+
+    Expression<Object>* Condition;
+    Statement* Body;
 };

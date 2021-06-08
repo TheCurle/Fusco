@@ -36,6 +36,7 @@ private:
     Statement* statement();
     Statement* printStatement();
     Statement* ifStatement();
+    Statement* whileStatement();
     Statement* expressionStatement();
 
     Expression<Object>* expression();
