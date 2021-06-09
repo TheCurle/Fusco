@@ -13,6 +13,7 @@ std::string Object::ToString() {
         case BoolType: return Bool ? "true" : "false";
         case NullType: return "null";
         case NumType: return std::to_string(Num);
+        case FunctionType: return "func";
     }
     return "unknown";
 }
