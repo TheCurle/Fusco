@@ -30,7 +30,7 @@ Statement* Parser::declaration() {
 Statement* Parser::varDeclaration() {
     struct Token name = verify(LI_IDENTIFIER, "Expected variable name.");
 
-    Expression<Object>* initializer = nullptr;
+    EXPR initializer = nullptr;
     if(matchAny(LI_EQUAL)) {
         initializer = expression();
     }
@@ -61,7 +61,7 @@ std::vector<Statement*> Parser::block() {
 }
 
 Statement* Parser::printStatement() {
-    Expression<Object>* value = expression();
+    EXPR value = expression();
     verify(LI_SEMICOLON, "Expected ';' after an expression to print");
 
     return new PrintStatement(value);
@@ -69,7 +69,7 @@ Statement* Parser::printStatement() {
 
 Statement* Parser::ifStatement() {
     verify(LI_LPAREN, "Expected a ( after if.");
-    Expression<Object>* Condition = expression();
+    EXPR Condition = expression();
     verify(LI_RPAREN, "Expected a ) after the condition in if.");
 
     Statement* Then = statement();
@@ -92,14 +92,14 @@ Statement* Parser::forStatement() {
     else
         initializer = expressionStatement();
 
-    Expression<Object>* condition = nullptr;
+    EXPR condition = nullptr;
 
     if(!check(LI_SEMICOLON))
         condition = expression();
 
     verify(LI_SEMICOLON, "Expected ';' after loop condition.");
 
-    Expression<Object>* increment = nullptr;
+    EXPR increment = nullptr;
     if(!check(LI_RPAREN))
         increment = expression();
 
@@ -131,7 +131,7 @@ Statement* Parser::forStatement() {
 
 Statement* Parser::whileStatement() {
     verify(LI_LPAREN, "Expected a ( after while.");
-    Expression<Object>* condition = expression();
+    EXPR condition = expression();
     verify(LI_RPAREN, "Expected a ) after the condition in while.");
 
     Statement* body = statement();
@@ -140,22 +140,22 @@ Statement* Parser::whileStatement() {
 }
 
 Statement* Parser::expressionStatement() {
-    Expression<Object>* value = expression();
+    EXPR value = expression();
     verify(LI_SEMICOLON, "Expected ';' after an expression.");
 
     return new ExpressionStatement(value);
 }
 
-Expression<Object>* Parser::expression() {
+EXPR Parser::expression() {
     return assignment();
 }
 
-Expression<Object>* Parser::assignment() {
-    Expression<Object>* expr = orExpr();
+EXPR Parser::assignment() {
+    EXPR expr = orExpr();
 
     if(matchAny(LI_EQUAL)) {
         Token equals = previous();
-        Expression<Object>* value = assignment();
+        EXPR value = assignment();
 
         if(dynamic_cast<VariableExpression<Object>*>(expr) != nullptr) {
             Token name = dynamic_cast<VariableExpression<Object>*>(expr)->Name;
@@ -168,89 +168,119 @@ Expression<Object>* Parser::assignment() {
     return expr;
 }
 
-Expression<Object>* Parser::orExpr() {
-    Expression<Object>* expr = andExpr();
+EXPR Parser::orExpr() {
+    EXPR expr = andExpr();
 
     while(matchAny(KW_OR)) {
         Token operatorToken = previous();
-        Expression<Object>* right = andExpr();
+        EXPR right = andExpr();
         expr = new LogicalExpression<Object>(expr, operatorToken, right);
     }
 
     return expr;
 }
 
-Expression<Object>* Parser::andExpr() {
-    Expression<Object>* expr = equality();
+EXPR Parser::andExpr() {
+    EXPR expr = equality();
 
     while(matchAny(KW_AND)) {
         Token operatorToken = previous();
-        Expression<Object>* right = equality();
+        EXPR right = equality();
         expr = new LogicalExpression<Object>(expr, operatorToken, right);
     }
 
     return expr;
 }
 
-Expression<Object>* Parser::equality() {
-    Expression<Object>* expr = comparison();
+EXPR Parser::equality() {
+    EXPR expr = comparison();
 
     while(matchAny(CMP_INEQ, CMP_EQUAL)) {
         struct Token operatorToken = previous();
-        Expression<Object>* right = comparison();
+        EXPR right = comparison();
         expr = new BinaryExpression<Object>(expr, operatorToken, right);
     }
 
     return expr;
 }
 
-Expression<Object>* Parser::comparison() {
-    Expression<Object>* expr = term();
+EXPR Parser::comparison() {
+    EXPR expr = term();
 
     while(matchAny(CMP_GREATER, CMP_GREAT_EQUAL, CMP_LESS, CMP_LESS_EQUAL)) {
         struct Token operatorToken = previous();
-        Expression<Object>* right = term();
+        EXPR right = term();
         expr = new BinaryExpression<Object>(expr, operatorToken, right);
     }
 
     return expr;
 }
 
-Expression<Object>* Parser::term() {
-    Expression<Object>* expr = factor();
+EXPR Parser::term() {
+    EXPR expr = factor();
 
     while(matchAny(AR_MINUS, AR_PLUS)) {
         struct Token operatorToken = previous();
-        Expression<Object>* right = factor();
+        EXPR right = factor();
         expr = new BinaryExpression<Object>(expr, operatorToken, right);
     }
 
     return expr;
 }
 
-Expression<Object>* Parser::factor() {
-    Expression<Object>* expr = unary();
+EXPR Parser::factor() {
+    EXPR expr = unary();
 
     while(matchAny(AR_ASTERISK, AR_RSLASH)) {
         struct Token operatorToken = previous();
-        Expression<Object>* right = unary();
+        EXPR right = unary();
         expr = new BinaryExpression<Object>(expr, operatorToken, right);
     }
 
     return expr;
 }
 
-Expression<Object>* Parser::unary() {
+EXPR Parser::unary() {
     if(matchAny(BOOL_EXCLAIM, AR_MINUS)) {
         struct Token operatorToken = previous();
-        Expression<Object>* right = unary();
+        EXPR right = unary();
         return new UnaryExpression<Object>(operatorToken, right);
     }
 
-    return primary();
+    return call();
 }
 
-Expression<Object>* Parser::primary() {
+EXPR Parser::call() {
+    EXPR expr = primary();
+
+    while(true) {
+        if(matchAny(LI_LPAREN)) {
+            expr = finishCall(expr);
+        } else {
+            break;
+        }
+    }
+
+    return expr;
+}
+
+EXPR Parser::finishCall(EXPR callee) {
+    std::vector<EXPR> arguments;
+
+    if(!check(LI_RPAREN)) {
+        do {
+            if(arguments.size() > 254)
+                Error(peek(), "255 argument limit reached.");
+            arguments.emplace_back(expression());
+        } while (matchAny(LI_COMMA));
+    }
+
+    Token parenthesis = verify(LI_RPAREN, "Expected ')' after argument list.");
+
+    return new CallExpression<Object>(callee, parenthesis, arguments);
+}
+
+EXPR Parser::primary() {
     if(matchAny(KW_FALSE)) return new LiteralExpression(Object::NewBool(false));
     if(matchAny(KW_TRUE)) return new LiteralExpression(Object::NewBool(true));
     if(matchAny(KW_NULL)) return new LiteralExpression(Object::Null);
@@ -265,7 +295,7 @@ Expression<Object>* Parser::primary() {
         return new VariableExpression<Object>(previous());
 
     if(matchAny(LI_LPAREN)) {
-        Expression<Object>* expr = expression();
+        EXPR expr = expression();
         verify(LI_RPAREN, "Expected ')' after expression");
         return new GroupingExpression<Object>(expr);
     }

@@ -40,16 +40,18 @@ private:
     Statement* forStatement();
     Statement* expressionStatement();
 
-    Expression<Object>* expression();
-    Expression<Object>* assignment();
-    Expression<Object>* orExpr();
-    Expression<Object>* andExpr();
-    Expression<Object>* equality();
-    Expression<Object>* comparison();
-    Expression<Object>* term();
-    Expression<Object>* factor();
-    Expression<Object>* unary();
-    Expression<Object>* primary();
+    EXPR expression();
+    EXPR assignment();
+    EXPR orExpr();
+    EXPR andExpr();
+    EXPR equality();
+    EXPR comparison();
+    EXPR term();
+    EXPR factor();
+    EXPR unary();
+    EXPR call();
+    EXPR finishCall(EXPR expr);
+    EXPR primary();
 
     /** Error management **/
     struct Token verify(Lexeme type, std::string error);

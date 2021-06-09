@@ -6,6 +6,7 @@
 #include <map>
 #include <algorithm>
 #include <ast/Statement.hpp>
+#include <interpreter/Globals.hpp>
 
 class ExecutionContext {
     public:
@@ -61,6 +62,14 @@ class Interpreter : public ExpressionVisitor<Object>,
 public:
     ~Interpreter() {}
 
+    Interpreter() {
+        Token getTimeName;
+        getTimeName.Lexeme = "getTime";
+        Globals.define(getTimeName, Object::NewCallable(new GetTime()));
+
+        Environment = Globals;
+    }
+
     void Interpret(std::vector<Statement*> expr);
 
     Object dummy() { return Object::Null; }
@@ -91,8 +100,12 @@ public:
 
     Object visitUnaryExpression(UnaryExpression<Object>* expr);
 
+    Object visitCallExpression(CallExpression<Object>* expr);
+
     Object visitLogicalExpression(LogicalExpression<Object>* expr);
 private:
+    ExecutionContext Globals;
+
     ExecutionContext Environment;
 
     void Execute(Statement* stmt);
@@ -142,6 +155,8 @@ public:
     Object visitAssignmentExpression(AssignmentExpression<Object>* expr);
 
     Object visitUnaryExpression(UnaryExpression<Object>* expr);
+
+    Object visitCallExpression(CallExpression<Object>* expr);
 
     Object visitLogicalExpression(LogicalExpression<Object>* expr);
 private:

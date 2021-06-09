@@ -37,3 +37,10 @@ Object Object::NewBool(bool boolean) {
     x.Bool = boolean;
     return x;
 }
+
+Object Object::NewCallable(Callable* function) {
+    Object x;
+    x.Type = FunctionType;
+    x.Function = function;
+    return x;
+}

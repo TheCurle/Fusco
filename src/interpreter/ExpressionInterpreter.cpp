@@ -83,6 +83,31 @@ Object Interpreter::visitUnaryExpression(UnaryExpression<Object>* expr) {
     return Object::Null;
 }
 
+Object Interpreter::visitCallExpression(CallExpression<Object>* expr) {
+    Object callee = Evaluate(expr->Callee);
+    std::vector<Object> arguments;
+    for(EXPR argument : expr->Arguments) {
+        arguments.emplace_back(Evaluate(argument));
+    }
+
+    Object functionHolder = Evaluate(expr->Callee);
+
+    if(functionHolder.Type != Object::FunctionType) {
+        throw RuntimeError(expr->Parenthesis, "Unable to call non-function type.");
+    }
+
+    Callable* function = functionHolder.Function;
+
+    if(arguments.size() != function->arguments()) {
+        std::string message("Expected ");
+        message.append(std::to_string(function->arguments())).append(" arguments, got ").append(std::to_string(arguments.size())).append(".");
+
+        throw RuntimeError(expr->Parenthesis, message);
+    }
+
+    return function->call(this, arguments);
+}
+
 Object Interpreter::visitLogicalExpression(LogicalExpression<Object>* expr) {
     Object left = Evaluate(expr->Left);
 

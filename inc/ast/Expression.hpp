@@ -26,6 +26,9 @@ class AssignmentExpression;
 template <typename T>
 class LogicalExpression;
 
+template <typename T>
+class CallExpression;
+
 
 template <typename T>
 class ExpressionVisitor {
@@ -40,6 +43,7 @@ public:
     virtual T visitVariableExpression(VariableExpression<T>* expr) = 0;
     virtual T visitAssignmentExpression(AssignmentExpression<T>* expr) = 0;
     virtual T visitLogicalExpression(LogicalExpression<T>* expr) = 0;
+    virtual T visitCallExpression(CallExpression<T>* expr) = 0;
 };
 
 template <typename T>
@@ -147,4 +151,19 @@ public:
     Expression<T>* Left;
     Token operatorToken;
     Expression<T>* Right;
+};
+
+template <typename T>
+class CallExpression : public Expression<T> {
+public:
+    explicit CallExpression(Expression<T>* pCallee, Token pParenthesis, std::vector<Expression<T>*> pArguments)
+        : Callee(pCallee), Parenthesis(pParenthesis), Arguments(pArguments) {}
+
+    T accept(ExpressionVisitor<T>* visitor) override {
+        return visitor->visitCallExpression(this);
+    }
+
+    Expression<T>* Callee;
+    Token Parenthesis;
+    std::vector<Expression<T>*> Arguments;
 };

@@ -11,8 +11,9 @@
 
 extern bool ErrorState;
 
+#define EXPR Expression<Object>*
 #define UNUSED(x) (void)(x)
-#define INTERP_VERSION "1.4"
+#define INTERP_VERSION "1.7"
 
 class Common {
 public:

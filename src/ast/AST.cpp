@@ -99,6 +99,11 @@ Object TreePrinter::visitUnaryExpression(UnaryExpression<Object>* expr) {
     return Object::NewStr(parenthesize(expr->operatorToken.Lexeme, &expr->right));
 }
 
+
+Object TreePrinter::visitCallExpression(CallExpression<Object>* expr) {
+    return Object::NewStr(parenthesize("call", &expr->Callee));
+}
+
 Object TreePrinter::visitLogicalExpression(LogicalExpression<Object>* expr) {
     return Object::NewStr(parenthesize(expr->operatorToken.Lexeme, &expr->Left, &expr->Right));
 }
