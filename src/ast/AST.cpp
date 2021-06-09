@@ -8,7 +8,7 @@
 #include <initializer_list>
 #include <interpreter/Interpreter.hpp>
 
-static int NestLevel = 0;
+static size_t NestLevel = 0;
 
 static std::string nest(std::string input) {
     std::string temp;
