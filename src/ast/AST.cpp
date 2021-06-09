@@ -8,6 +8,17 @@
 #include <initializer_list>
 #include <interpreter/Interpreter.hpp>
 
+static int NestLevel = 0;
+
+static std::string nest(std::string input) {
+    std::string temp;
+    for(size_t i = 0; i < NestLevel; i++)
+        temp.append(" ");
+    temp.append(input);
+
+    return temp;
+}
+
 Object TreePrinter::print(std::vector<Statement*> stmts) {
     for(auto stmt : stmts) {
         stmt->accept(this);
@@ -45,18 +56,21 @@ void TreePrinter::visitIf(IfStatement* stmt) {
 
 void TreePrinter::visitWhile(WhileStatement* stmt) {
     std::cout << "While loop:\n\tCondition: -> " << parenthesize("", &stmt->Condition) << std::endl;
-    std::cout << "\tBody: -> ";
+    std::cout << "\tBody:";
     stmt->Body->accept(this);
     std::cout << std::endl;
 }
 
 void TreePrinter::visitBlock(BlockStatement* stmt) {
-    std::cout << "Block starts:" << std::endl;
+    std::cout << nest("Block starts:") << std::endl;
+
+    NestLevel++;
     for(Statement* inner : stmt->Statements) {
-        std::cout << "\t -> ";
+        std::cout << nest("-> ");
         inner->accept(this);
     }
-    std::cout << "\t -> Block ends." << std::endl;
+    NestLevel--;
+    std::cout << nest("-> Block ends.") << std::endl;
 }
 
 Object TreePrinter::visitBinaryExpression(BinaryExpression<Object>* expr) {
@@ -99,7 +113,8 @@ std::string TreePrinter::parenthesize(std::string Header, Args... args) {
     (vec.push_back(*args), ...);
 
     for(auto value: vec) {
-        builder.append(" ").append(value->accept(this).ToString());
+        if(value != nullptr)
+            builder.append(" ").append(value->accept(this).ToString());
     }
 
     builder.append(")");

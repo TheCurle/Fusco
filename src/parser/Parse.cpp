@@ -41,6 +41,7 @@ Statement* Parser::varDeclaration() {
 
 Statement* Parser::statement() {
     if(matchAny(KW_IF)) return ifStatement();
+    if(matchAny(KW_FOR)) return forStatement();
     if(matchAny(KW_WHILE)) return whileStatement();
     if(matchAny(KW_PRINT)) return printStatement();
     if(matchAny(LI_LBRACE)) return new BlockStatement(block());
@@ -78,6 +79,54 @@ Statement* Parser::ifStatement() {
         Else = statement();
 
     return new IfStatement(Condition, Then, Else);
+}
+
+Statement* Parser::forStatement() {
+    verify(LI_LPAREN, "Expected '(' after for.");
+    Statement* initializer;
+
+    if(matchAny(LI_SEMICOLON))
+        initializer = nullptr;
+    else if(matchAny(KW_VAR))
+        initializer = varDeclaration();
+    else
+        initializer = expressionStatement();
+
+    Expression<Object>* condition = nullptr;
+
+    if(!check(LI_SEMICOLON))
+        condition = expression();
+
+    verify(LI_SEMICOLON, "Expected ';' after loop condition.");
+
+    Expression<Object>* increment = nullptr;
+    if(!check(LI_RPAREN))
+        increment = expression();
+
+    verify(LI_RPAREN, "Expected ')' after for.");
+
+    Statement* body = statement();
+
+    if(increment != nullptr) {
+        std::vector<Statement*> stmts;
+        stmts.emplace_back(body);
+        stmts.emplace_back(new ExpressionStatement(increment));
+        body = new BlockStatement(stmts);
+    }
+
+    if(condition == nullptr) {
+        condition = new LiteralExpression<Object>(Object::NewBool(true));
+    }
+    body = new WhileStatement(condition, body);
+
+    if(initializer != nullptr) {
+        std::vector<Statement*> stmts;
+        stmts.emplace_back(initializer);
+        stmts.emplace_back(body);
+        body = new BlockStatement(stmts);
+    }
+
+    return body;
 }
 
 Statement* Parser::whileStatement() {
