@@ -36,7 +36,7 @@ void Interpreter::visitVariable(VariableStatement* stmt) {
         value = Evaluate(stmt->Expr);
     }
 
-    Environment.define(stmt->Name, value);
+    Environment->define(stmt->Name, value);
 }
 
 void Interpreter::visitIf(IfStatement* stmt) {
@@ -53,17 +53,26 @@ void Interpreter::visitWhile(WhileStatement* stmt) {
     }
 }
 
-void Interpreter::visitFunc(FuncStatement* Func) {
-    Function* func = new Function(Func);
-    Environment.define(Func->Name, Object::NewCallable(func));
+void Interpreter::visitFunc(FuncStatement* stmt) {
+    Function* func = new Function(stmt, Environment);
+    Environment->define(stmt->Name, Object::NewCallable(func));
+}
+
+void Interpreter::visitReturn(ReturnStatement* stmt) {
+    Object value = Object::Null;
+
+    if(stmt->Value != nullptr)
+        value = Evaluate(stmt->Value);
+
+    throw Return(value);
 }
 
 void Interpreter::visitBlock(BlockStatement* stmt) {
     ExecuteBlock(stmt->Statements, new ExecutionContext(Environment));
 }
 
-void Interpreter::ExecuteBlock(std::vector<Statement*> statements, ExecutionContext environment) {
-    ExecutionContext* previous = &this->Environment;
+void Interpreter::ExecuteBlock(std::vector<Statement*> statements, ExecutionContext* environment) {
+    ExecutionContext* previous = this->Environment;
 
     this->Environment = environment;
 
@@ -71,5 +80,5 @@ void Interpreter::ExecuteBlock(std::vector<Statement*> statements, ExecutionCont
         Execute(stmt);
     }
 
-    this->Environment = *previous;
+    this->Environment = previous;
 }

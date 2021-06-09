@@ -10,7 +10,8 @@
 
 bool ErrorState = false;
 
-static Interpreter Engine;
+static ExecutionContext* Context = new ExecutionContext();
+static Interpreter Engine(Context);
 
 Object Object::Null;
 

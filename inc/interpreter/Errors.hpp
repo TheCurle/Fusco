@@ -20,3 +20,10 @@ public:
         return Message.c_str();
     }
 };
+
+class Return : public std::exception {
+public:
+    Object Value;
+
+    Return(Object value) : Value(value) {}
+};

@@ -45,9 +45,22 @@ Statement* Parser::statement() {
     if(matchAny(KW_FOR)) return forStatement();
     if(matchAny(KW_WHILE)) return whileStatement();
     if(matchAny(KW_PRINT)) return printStatement();
+    if(matchAny(KW_RETURN)) return returnStatement();
     if(matchAny(LI_LBRACE)) return new BlockStatement(block());
 
     return expressionStatement();
+}
+
+Statement* Parser::returnStatement() {
+    Token keyword = previous();
+
+    EXPR value = nullptr;
+    if(!check(LI_SEMICOLON))
+        value = expression();
+
+    verify(LI_SEMICOLON, "Expected ; after return.");
+
+    return new ReturnStatement(keyword, value);
 }
 
 std::vector<Statement*> Parser::block() {

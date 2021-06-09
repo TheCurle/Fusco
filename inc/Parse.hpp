@@ -34,6 +34,7 @@ private:
     Statement* declaration();
     Statement* varDeclaration();
     Statement* statement();
+    Statement* returnStatement();
     Statement* printStatement();
     Statement* ifStatement();
     Statement* whileStatement();

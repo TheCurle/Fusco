@@ -28,8 +28,10 @@ Object Interpreter::visitBinaryExpression(BinaryExpression<Object>* expr) {
 
             if(left.Type == Object::StrType && right.Type == Object::StrType)
                 return Object::NewStr(left.Str.append(right.Str));
-            break;
 
+            if(left.Type == Object::StrType || right.Type == Object::StrType)
+                return Object::NewStr(left.ToString().append(right.ToString()));
+            break;
         case CMP_GREATER:
             //CheckOperands(expr->operatorToken, left, right);
             return Object::NewBool(left.Num > right.Num);
@@ -63,12 +65,12 @@ Object Interpreter::visitLiteralExpression(LiteralExpression<Object>* expr) {
 }
 
 Object Interpreter::visitVariableExpression(VariableExpression<Object>* expr) {
-    return Environment.get(expr->Name);
+    return Environment->get(expr->Name);
 }
 
 Object Interpreter::visitAssignmentExpression(AssignmentExpression<Object>* expr) {
     Object value = Evaluate(expr->Expr);
-    Environment.assign(expr->Name, value);
+    Environment->assign(expr->Name, value);
     return value;
 }
 
@@ -168,7 +170,8 @@ void Interpreter::CheckOperand(struct Token operatorToken, Object operand) {
 void Interpreter::CheckOperands(struct Token operatorToken, Object left, Object right) {
     switch(operatorToken.Type) {
         case AR_PLUS:
-            if(left.Type == right.Type && ((left.Type == Object::NumType) || (left.Type == Object::StrType)))
+            if((left.Type == right.Type && ((left.Type == Object::NumType) || (left.Type == Object::StrType)))
+                    || (left.Type == Object::StrType || right.Type == Object::StrType))
                 return;
             throw RuntimeError(operatorToken, "Only strings and numbers may be added to each other.");
             break;

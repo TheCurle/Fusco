@@ -62,19 +62,20 @@ class Interpreter : public ExpressionVisitor<Object>,
 public:
     ~Interpreter() {}
 
-    Interpreter() {
+    Interpreter(ExecutionContext* spark) {
+        Globals = spark;
         Token getTimeName;
         getTimeName.Lexeme = "getTime";
-        Globals.define(getTimeName, Object::NewCallable(new GetTime()));
+        Globals->define(getTimeName, Object::NewCallable(new GetTime()));
 
         Environment = Globals;
     }
 
-    ExecutionContext Globals;
+    ExecutionContext* Globals;
 
     void Interpret(std::vector<Statement*> expr);
 
-    void ExecuteBlock(std::vector<Statement*> statements, ExecutionContext environment);
+    void ExecuteBlock(std::vector<Statement*> statements, ExecutionContext* environment);
 
     Object dummy() { return Object::Null; }
 
@@ -94,6 +95,8 @@ public:
 
     void visitFunc(FuncStatement* Func);
 
+    void visitReturn(ReturnStatement* Return);
+
     Object visitBinaryExpression(BinaryExpression<Object>* expr);
 
     Object visitGroupingExpression(GroupingExpression<Object>* expr);
@@ -111,7 +114,7 @@ public:
     Object visitLogicalExpression(LogicalExpression<Object>* expr);
 private:
 
-    ExecutionContext Environment;
+    ExecutionContext* Environment;
 
     void Execute(Statement* stmt);
 
@@ -150,6 +153,8 @@ public:
 
     void visitFunc(FuncStatement* Func) override;
 
+    void visitReturn(ReturnStatement* Return) override;
+
     Object visitBinaryExpression(BinaryExpression<Object>* expr);
 
     Object visitGroupingExpression(GroupingExpression<Object>* expr);
@@ -173,18 +178,21 @@ private:
 
 class Function : public Callable {
 public:
-    Function(FuncStatement* pDeclaration)
-        : Declaration(pDeclaration) {}
+    Function(FuncStatement* pDeclaration, ExecutionContext* pClosure)
+        : Declaration(pDeclaration), Closure(pClosure) {}
 
     Object call(Interpreter* interpreter, std::vector<Object> params) {
-        ExecutionContext* environment = new ExecutionContext(interpreter->Globals);
+        ExecutionContext* environment = new ExecutionContext(Closure);
         for(size_t i = 0; i < Declaration->Params.size(); i++) {
             environment->define(Declaration->Params.at(i),
                 params.at(i));
         }
 
-        interpreter->ExecuteBlock(Declaration->Body, environment);
-
+        try {
+            interpreter->ExecuteBlock(Declaration->Body, environment);
+        } catch (Return &value) {
+            return value.Value;
+        }
         return Object::Null;
     }
 
@@ -193,4 +201,5 @@ public:
     }
 
     FuncStatement* Declaration;
+    ExecutionContext* Closure;
 };

@@ -14,6 +14,7 @@ class IfStatement;
 class WhileStatement;
 class ForStatement;
 class FuncStatement;
+class ReturnStatement;
 
 class StatementVisitor {
     public:
@@ -26,6 +27,7 @@ class StatementVisitor {
     virtual void visitIf(IfStatement* If) = 0;
     virtual void visitWhile(WhileStatement* While) = 0;
     virtual void visitFunc(FuncStatement* Func) = 0;
+    virtual void visitReturn(ReturnStatement* Return) = 0;
 };
 
 class Statement {
@@ -114,4 +116,17 @@ class FuncStatement : public Statement {
     Token Name;
     std::vector<Token> Params;
     std::vector<Statement*> Body;
+};
+
+class ReturnStatement : public Statement {
+    public:
+    explicit ReturnStatement(Token pKeyword, EXPR pValue)
+        : Keyword(pKeyword), Value(pValue) {}
+
+    void accept(StatementVisitor* visitor) override {
+        visitor->visitReturn(this);
+    }
+
+    Token Keyword;
+    EXPR Value;
 };

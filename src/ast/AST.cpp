@@ -76,6 +76,10 @@ void TreePrinter::visitFunc(FuncStatement* stmt) {
     std::cout << std::endl;
 }
 
+void TreePrinter::visitReturn(ReturnStatement* stmt) {
+    std::cout << parenthesize("return", &stmt->Value) << std::endl;
+}
+
 void TreePrinter::visitBlock(BlockStatement* stmt) {
     std::cout << nest("Block starts:") << std::endl;
 
@@ -116,6 +120,13 @@ Object TreePrinter::visitUnaryExpression(UnaryExpression<Object>* expr) {
 
 
 Object TreePrinter::visitCallExpression(CallExpression<Object>* expr) {
+    EXPR firstArg = nullptr;
+    if(expr->Arguments.size() > 0)
+        firstArg = expr->Arguments.at(0);
+
+    if(firstArg != nullptr)
+        return Object::NewStr(parenthesize("call", &expr->Callee, &firstArg));
+
     return Object::NewStr(parenthesize("call", &expr->Callee));
 }
 
