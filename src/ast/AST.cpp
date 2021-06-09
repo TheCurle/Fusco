@@ -61,6 +61,21 @@ void TreePrinter::visitWhile(WhileStatement* stmt) {
     std::cout << std::endl;
 }
 
+void TreePrinter::visitFunc(FuncStatement* stmt) {
+    std::cout << std::string("Function ").append(stmt->Name.Lexeme) << std::endl;
+    std::cout << "\tParameters: ";
+    for(Token param : stmt->Params)
+        std::cout << std::string(" ").append(param.Lexeme);
+
+    std::cout << std::endl << "\tBody:" << std::endl;
+
+    for(Statement* statement : stmt->Body) {
+        std::cout << nest("-> ");
+        statement->accept(this);
+    }
+    std::cout << std::endl;
+}
+
 void TreePrinter::visitBlock(BlockStatement* stmt) {
     std::cout << nest("Block starts:") << std::endl;
 

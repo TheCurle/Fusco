@@ -70,7 +70,11 @@ public:
         Environment = Globals;
     }
 
+    ExecutionContext Globals;
+
     void Interpret(std::vector<Statement*> expr);
+
+    void ExecuteBlock(std::vector<Statement*> statements, ExecutionContext environment);
 
     Object dummy() { return Object::Null; }
 
@@ -88,6 +92,8 @@ public:
 
     void visitBlock(BlockStatement* stmt);
 
+    void visitFunc(FuncStatement* Func);
+
     Object visitBinaryExpression(BinaryExpression<Object>* expr);
 
     Object visitGroupingExpression(GroupingExpression<Object>* expr);
@@ -104,12 +110,10 @@ public:
 
     Object visitLogicalExpression(LogicalExpression<Object>* expr);
 private:
-    ExecutionContext Globals;
 
     ExecutionContext Environment;
 
     void Execute(Statement* stmt);
-    void ExecuteBlock(std::vector<Statement*> statements, ExecutionContext environment);
 
     Object Evaluate(Expression<Object>* expr);
 
@@ -140,9 +144,11 @@ public:
 
     void visitIf(IfStatement* stmt) override;
 
-    void visitWhile(WhileStatement* stmt);
+    void visitWhile(WhileStatement* stmt) override;
 
     void visitBlock(BlockStatement* stmt) override;
+
+    void visitFunc(FuncStatement* Func) override;
 
     Object visitBinaryExpression(BinaryExpression<Object>* expr);
 
@@ -162,4 +168,29 @@ public:
 private:
     template <class ... Args>
     std::string parenthesize(std::string Header, Args ... args);
+};
+
+
+class Function : public Callable {
+public:
+    Function(FuncStatement* pDeclaration)
+        : Declaration(pDeclaration) {}
+
+    Object call(Interpreter* interpreter, std::vector<Object> params) {
+        ExecutionContext* environment = new ExecutionContext(interpreter->Globals);
+        for(size_t i = 0; i < Declaration->Params.size(); i++) {
+            environment->define(Declaration->Params.at(i),
+                params.at(i));
+        }
+
+        interpreter->ExecuteBlock(Declaration->Body, environment);
+
+        return Object::Null;
+    }
+
+    size_t arguments() {
+        return Declaration->Params.size();
+    }
+
+    FuncStatement* Declaration;
 };

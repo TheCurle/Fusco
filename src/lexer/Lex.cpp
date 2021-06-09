@@ -271,8 +271,9 @@ int Lexer::ReadKeyword(std::string Str) {
                 return KW_FOR;
             if(Str.compare("false") == 0)
                 return KW_FALSE;
+            if(Str.compare("func") == 0)
+                return KW_FUNC;
             break;
-
         case 'i':
         /*
             if(!Str.compare("i8"))

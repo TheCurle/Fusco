@@ -8,6 +8,7 @@
 
 class Callable;
 class Interpreter;
+class FuncStatement;
 
 class Object {
     public:

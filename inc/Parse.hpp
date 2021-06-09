@@ -40,6 +40,8 @@ private:
     Statement* forStatement();
     Statement* expressionStatement();
 
+    FuncStatement* function(std::string type);
+
     EXPR expression();
     EXPR assignment();
     EXPR orExpr();

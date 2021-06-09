@@ -53,6 +53,11 @@ void Interpreter::visitWhile(WhileStatement* stmt) {
     }
 }
 
+void Interpreter::visitFunc(FuncStatement* Func) {
+    Function* func = new Function(Func);
+    Environment.define(Func->Name, Object::NewCallable(func));
+}
+
 void Interpreter::visitBlock(BlockStatement* stmt) {
     ExecuteBlock(stmt->Statements, new ExecutionContext(Environment));
 }

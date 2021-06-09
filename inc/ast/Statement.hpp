@@ -13,6 +13,7 @@ class BlockStatement;
 class IfStatement;
 class WhileStatement;
 class ForStatement;
+class FuncStatement;
 
 class StatementVisitor {
     public:
@@ -24,6 +25,7 @@ class StatementVisitor {
     virtual void visitBlock(BlockStatement* Block) = 0;
     virtual void visitIf(IfStatement* If) = 0;
     virtual void visitWhile(WhileStatement* While) = 0;
+    virtual void visitFunc(FuncStatement* Func) = 0;
 };
 
 class Statement {
@@ -98,4 +100,18 @@ class WhileStatement : public Statement {
 
     Expression<Object>* Condition;
     Statement* Body;
+};
+
+class FuncStatement : public Statement {
+    public:
+    explicit FuncStatement(Token pName, std::vector<Token> pParams, std::vector<Statement*> pBody)
+        : Name(pName), Params(pParams), Body(pBody) {}
+
+    void accept(StatementVisitor* visitor) override {
+        visitor->visitFunc(this);
+    }
+
+    Token Name;
+    std::vector<Token> Params;
+    std::vector<Statement*> Body;
 };

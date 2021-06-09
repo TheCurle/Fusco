@@ -17,6 +17,7 @@ std::vector<Statement*> Parser::parse() {
 
 Statement* Parser::declaration() {
     try {
+        if(matchAny(KW_FUNC)) return function("function");
         if(matchAny(KW_VAR)) return varDeclaration();
 
         return statement();
@@ -144,6 +145,29 @@ Statement* Parser::expressionStatement() {
     verify(LI_SEMICOLON, "Expected ';' after an expression.");
 
     return new ExpressionStatement(value);
+}
+
+FuncStatement* Parser::function(std::string type) {
+    Token name = verify(LI_IDENTIFIER, std::string("Expected a ").append(type).append(" name."));
+    std::vector<Token> parameters;
+
+    verify(LI_LPAREN, std::string("Expected ( after ").append(type).append(" name."));
+
+    if(!check(LI_RPAREN)) {
+        do {
+            if(parameters.size() > 254)
+                Error(peek(), "255 parameter limit reached.");
+
+            parameters.emplace_back(verify(LI_IDENTIFIER, "Expected parameter name."));
+        } while (matchAny(LI_COMMA));
+    }
+
+    verify(LI_RPAREN, std::string("Expected ( after ").append(type).append(" parameters."));
+    verify(LI_LBRACE, std::string("Expected { before ").append(type).append(" body."));
+
+    std::vector<Statement*> body = block();
+
+    return new FuncStatement(name, parameters, body);
 }
 
 EXPR Parser::expression() {

@@ -13,7 +13,7 @@ extern bool ErrorState;
 
 #define EXPR Expression<Object>*
 #define UNUSED(x) (void)(x)
-#define INTERP_VERSION "1.7"
+#define INTERP_VERSION "1.8"
 
 class Common {
 public:
