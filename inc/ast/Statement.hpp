@@ -20,102 +20,102 @@ class StatementVisitor {
     public:
 
     virtual ~StatementVisitor() = default;
-    virtual void visitExpression(ExpressionStatement* Expr) = 0;
-    virtual void visitPrint(PrintStatement* Print) = 0;
-    virtual void visitVariable(VariableStatement* Var) = 0;
-    virtual void visitBlock(BlockStatement* Block) = 0;
-    virtual void visitIf(IfStatement* If) = 0;
-    virtual void visitWhile(WhileStatement* While) = 0;
-    virtual void visitFunc(FuncStatement* Func) = 0;
-    virtual void visitReturn(ReturnStatement* Return) = 0;
+    virtual void visitExpression(ExpressionStatement &Expr) = 0;
+    virtual void visitPrint(PrintStatement &Print) = 0;
+    virtual void visitVariable(VariableStatement &Var) = 0;
+    virtual void visitBlock(BlockStatement &Block) = 0;
+    virtual void visitIf(IfStatement &If) = 0;
+    virtual void visitWhile(WhileStatement &While) = 0;
+    virtual void visitFunc(FuncStatement &Func) = 0;
+    virtual void visitReturn(ReturnStatement &Return) = 0;
 };
 
-class Statement {
+class Statement : public std::enable_shared_from_this<Statement> {
     public:
-    virtual void accept(StatementVisitor* visitor) = 0;
+    virtual void accept(shared_ptr<StatementVisitor> visitor) = 0;
     virtual ~Statement() = default;
 };
 
 class ExpressionStatement : public Statement {
     public:
-    explicit ExpressionStatement(Expression<Object>* pExpr) : Expr(pExpr) {}
-    void accept(StatementVisitor* visitor) override {
-        visitor->visitExpression(this);
+    explicit ExpressionStatement(shared_ptr<Expression<Object>> pExpr) : Expr(pExpr) {}
+    void accept(shared_ptr<StatementVisitor> visitor) override {
+        visitor->visitExpression(*this);
     }
 
-    Expression<Object>* Expr;
+    shared_ptr<Expression<Object>> Expr;
 };
 
 class PrintStatement : public Statement {
     public:
-    explicit PrintStatement(Expression<Object>* pExpr) : Expr(pExpr) {}
-    void accept(StatementVisitor* visitor) override {
-        visitor->visitPrint(this);
+    explicit PrintStatement(shared_ptr<Expression<Object>> pExpr) : Expr(pExpr) {}
+    void accept(shared_ptr<StatementVisitor> visitor) override {
+        visitor->visitPrint(*this);
     }
 
-    Expression<Object>* Expr;
+    shared_ptr<Expression<Object>> Expr;
 };
 
 class VariableStatement : public Statement {
     public:
-    explicit VariableStatement(struct Token pName, Expression<Object>* pExpr) : Expr(pExpr), Name(pName) {}
-    void accept(StatementVisitor* visitor) override {
-        visitor->visitVariable(this);
+    explicit VariableStatement(struct Token pName, shared_ptr<Expression<Object>> pExpr) : Expr(pExpr), Name(pName) {}
+    void accept(shared_ptr<StatementVisitor> visitor) override {
+        visitor->visitVariable(*this);
     }
 
-    Expression<Object>* Expr;
+    shared_ptr<Expression<Object>> Expr;
     struct Token Name;
 };
 
 class BlockStatement : public Statement {
     public:
-    explicit BlockStatement(std::vector<Statement*> statements) : Statements(statements) {}
-    void accept(StatementVisitor* visitor) override {
-        visitor->visitBlock(this);
+    explicit BlockStatement(std::vector<shared_ptr<Statement>> statements) : Statements(statements) {}
+    void accept(shared_ptr<StatementVisitor> visitor) override {
+        visitor->visitBlock(*this);
     }
 
-    std::vector<Statement*> Statements;
+    std::vector<shared_ptr<Statement>> Statements;
 };
 
 class IfStatement : public Statement {
     public:
-    explicit IfStatement(Expression<Object>* pCondition, Statement* pThen, Statement* pElse)
+    explicit IfStatement(shared_ptr<Expression<Object>> pCondition, shared_ptr<Statement> pThen, shared_ptr<Statement> pElse)
         : Condition(pCondition), Then(pThen), Else(pElse) {}
 
-    void accept(StatementVisitor* visitor) override {
-        visitor->visitIf(this);
+    void accept(shared_ptr<StatementVisitor> visitor) override {
+        visitor->visitIf(*this);
     }
 
-    Expression<Object>* Condition;
-    Statement* Then;
-    Statement* Else;
+    shared_ptr<Expression<Object>> Condition;
+    shared_ptr<Statement> Then;
+    shared_ptr<Statement> Else;
 };
 
 class WhileStatement : public Statement {
     public:
-    explicit WhileStatement(Expression<Object>* pCondition, Statement* pBody)
+    explicit WhileStatement(shared_ptr<Expression<Object>> pCondition, shared_ptr<Statement> pBody)
         : Condition(pCondition), Body(pBody) {}
 
-    void accept(StatementVisitor* visitor) override {
-        visitor->visitWhile(this);
+    void accept(shared_ptr<StatementVisitor> visitor) override {
+        visitor->visitWhile(*this);
     }
 
-    Expression<Object>* Condition;
-    Statement* Body;
+    shared_ptr<Expression<Object>> Condition;
+    shared_ptr<Statement> Body;
 };
 
 class FuncStatement : public Statement {
     public:
-    explicit FuncStatement(Token pName, std::vector<Token> pParams, std::vector<Statement*> pBody)
+    explicit FuncStatement(Token pName, std::vector<Token> pParams, std::vector<shared_ptr<Statement>> pBody)
         : Name(pName), Params(pParams), Body(pBody) {}
 
-    void accept(StatementVisitor* visitor) override {
-        visitor->visitFunc(this);
+    void accept(shared_ptr<StatementVisitor> visitor) override {
+        visitor->visitFunc(*this);
     }
 
     Token Name;
     std::vector<Token> Params;
-    std::vector<Statement*> Body;
+    std::vector<shared_ptr<Statement>> Body;
 };
 
 class ReturnStatement : public Statement {
@@ -123,8 +123,8 @@ class ReturnStatement : public Statement {
     explicit ReturnStatement(Token pKeyword, EXPR pValue)
         : Keyword(pKeyword), Value(pValue) {}
 
-    void accept(StatementVisitor* visitor) override {
-        visitor->visitReturn(this);
+    void accept(shared_ptr<StatementVisitor> visitor) override {
+        visitor->visitReturn(*this);
     }
 
     Token Keyword;

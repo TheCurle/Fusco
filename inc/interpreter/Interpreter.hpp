@@ -3,19 +3,22 @@
  *  FUSCO  *
  ***********/
 #pragma once
+#include <memory>
 #include <map>
 #include <algorithm>
 #include <ast/Statement.hpp>
 #include <interpreter/Globals.hpp>
 
-class ExecutionContext {
+using std::shared_ptr;
+
+class ExecutionContext : public std::enable_shared_from_this<ExecutionContext> {
     public:
 
     ExecutionContext() {
         Enclosing = nullptr;
     }
 
-    ExecutionContext(ExecutionContext* inner) {
+    ExecutionContext(shared_ptr<ExecutionContext> inner) {
         Enclosing = inner;
     }
 
@@ -52,73 +55,74 @@ class ExecutionContext {
     }
 
     private:
-    ExecutionContext* Enclosing;
+    shared_ptr<ExecutionContext> Enclosing;
     std::map<std::string, Object> ObjectMap;
 };
 
 class Interpreter : public ExpressionVisitor<Object>,
                     public StatementVisitor,
-                    public Common {
+                    public Common,
+                    public std::enable_shared_from_this<Interpreter> {
 public:
     ~Interpreter() {}
 
-    Interpreter(ExecutionContext* spark) {
+    Interpreter(shared_ptr<ExecutionContext> spark) {
         Globals = spark;
         Token getTimeName;
         getTimeName.Lexeme = "getTime";
-        Globals->define(getTimeName, Object::NewCallable(new GetTime()));
+        Globals->define(getTimeName, Object::NewCallable(std::make_shared<GetTime>()));
 
         Environment = Globals;
     }
 
-    ExecutionContext* Globals;
+    shared_ptr<ExecutionContext> Globals;
 
-    void Interpret(std::vector<Statement*> expr);
+    void Interpret(std::vector<shared_ptr<Statement>> expr);
 
-    void ExecuteBlock(std::vector<Statement*> statements, ExecutionContext* environment);
+    void ExecuteBlock(std::vector<shared_ptr<Statement>> statements, shared_ptr<ExecutionContext> environment);
 
     Object dummy() { return Object::Null; }
 
-    Object print(Expression<Object>* expr);
+    Object print(shared_ptr<Expression<Object>> expr);
 
-    void visitExpression(ExpressionStatement* stmt);
+    void visitExpression(ExpressionStatement &stmt) override;
 
-    void visitPrint(PrintStatement* stmt);
+    void visitPrint(PrintStatement &stmt) override;
 
-    void visitVariable(VariableStatement* stmt);
+    void visitVariable(VariableStatement &stmt) override;
 
-    void visitIf(IfStatement* stmt);
+    void visitIf(IfStatement &stmt) override;
 
-    void visitWhile(WhileStatement* stmt);
+    void visitWhile(WhileStatement &stmt) override;
 
-    void visitBlock(BlockStatement* stmt);
+    void visitBlock(BlockStatement &stmt) override;
 
-    void visitFunc(FuncStatement* Func);
+    void visitFunc(FuncStatement &stmt) override;
 
-    void visitReturn(ReturnStatement* Return);
+    void visitReturn(ReturnStatement &stmt) override;
 
-    Object visitBinaryExpression(BinaryExpression<Object>* expr);
+    Object visitBinaryExpression(BinaryExpression<Object> &expr);
 
-    Object visitGroupingExpression(GroupingExpression<Object>* expr);
+    Object visitGroupingExpression(GroupingExpression<Object> &expr);
 
-    Object visitLiteralExpression(LiteralExpression<Object>* expr);
+    Object visitLiteralExpression(LiteralExpression<Object> &expr);
 
-    Object visitVariableExpression(VariableExpression<Object>* expr);
+    Object visitVariableExpression(VariableExpression<Object> &expr);
 
-    Object visitAssignmentExpression(AssignmentExpression<Object>* expr);
+    Object visitAssignmentExpression(AssignmentExpression<Object> &expr);
 
-    Object visitUnaryExpression(UnaryExpression<Object>* expr);
+    Object visitUnaryExpression(UnaryExpression<Object> &expr);
 
-    Object visitCallExpression(CallExpression<Object>* expr);
+    Object visitCallExpression(CallExpression<Object> &expr);
 
-    Object visitLogicalExpression(LogicalExpression<Object>* expr);
+    Object visitLogicalExpression(LogicalExpression<Object> &expr);
 private:
 
-    ExecutionContext* Environment;
+    shared_ptr<ExecutionContext> Environment;
 
-    void Execute(Statement* stmt);
+    void Execute(shared_ptr<Statement> stmt);
 
-    Object Evaluate(Expression<Object>* expr);
+    Object Evaluate(shared_ptr<Expression<Object>> expr);
 
     std::string Stringify(Object obj);
 
@@ -131,45 +135,46 @@ private:
 
 
 class TreePrinter : public ExpressionVisitor<Object>,
-                    public StatementVisitor {
+                    public StatementVisitor,
+                    public std::enable_shared_from_this<TreePrinter> {
 public:
     ~TreePrinter() {}
 
     Object dummy() { return Object::Null; }
 
-    Object print(std::vector<Statement*> stmt);
+    Object print(std::vector<shared_ptr<Statement>> stmt);
 
-    void visitExpression(ExpressionStatement* stmt) override;
+    void visitExpression(ExpressionStatement &stmt) override;
 
-    void visitPrint(PrintStatement* stmt) override;
+    void visitPrint(PrintStatement &stmt) override;
 
-    void visitVariable(VariableStatement* stmt) override;
+    void visitVariable(VariableStatement &stmt) override;
 
-    void visitIf(IfStatement* stmt) override;
+    void visitIf(IfStatement &stmt) override;
 
-    void visitWhile(WhileStatement* stmt) override;
+    void visitWhile(WhileStatement &stmt) override;
 
-    void visitBlock(BlockStatement* stmt) override;
+    void visitBlock(BlockStatement &stmt) override;
 
-    void visitFunc(FuncStatement* Func) override;
+    void visitFunc(FuncStatement &stmt) override;
 
-    void visitReturn(ReturnStatement* Return) override;
+    void visitReturn(ReturnStatement &stmt) override;
 
-    Object visitBinaryExpression(BinaryExpression<Object>* expr);
+    Object visitBinaryExpression(BinaryExpression<Object> &expr);
 
-    Object visitGroupingExpression(GroupingExpression<Object>* expr);
+    Object visitGroupingExpression(GroupingExpression<Object> &expr);
 
-    Object visitLiteralExpression(LiteralExpression<Object>* expr);
+    Object visitLiteralExpression(LiteralExpression<Object> &expr);
 
-    Object visitVariableExpression(VariableExpression<Object>* expr);
+    Object visitVariableExpression(VariableExpression<Object> &expr);
 
-    Object visitAssignmentExpression(AssignmentExpression<Object>* expr);
+    Object visitAssignmentExpression(AssignmentExpression<Object> &expr);
 
-    Object visitUnaryExpression(UnaryExpression<Object>* expr);
+    Object visitUnaryExpression(UnaryExpression<Object> &expr);
 
-    Object visitCallExpression(CallExpression<Object>* expr);
+    Object visitCallExpression(CallExpression<Object> &expr);
 
-    Object visitLogicalExpression(LogicalExpression<Object>* expr);
+    Object visitLogicalExpression(LogicalExpression<Object> &expr);
 private:
     template <class ... Args>
     std::string parenthesize(std::string Header, Args ... args);
@@ -178,11 +183,11 @@ private:
 
 class Function : public Callable {
 public:
-    Function(FuncStatement* pDeclaration, ExecutionContext* pClosure)
+    Function(shared_ptr<FuncStatement> pDeclaration, shared_ptr<ExecutionContext> pClosure)
         : Declaration(pDeclaration), Closure(pClosure) {}
 
-    Object call(Interpreter* interpreter, std::vector<Object> params) {
-        ExecutionContext* environment = new ExecutionContext(Closure);
+    Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params) {
+        shared_ptr<ExecutionContext> environment = std::make_shared<ExecutionContext>(Closure);
         for(size_t i = 0; i < Declaration->Params.size(); i++) {
             environment->define(Declaration->Params.at(i),
                 params.at(i));
@@ -200,6 +205,6 @@ public:
         return Declaration->Params.size();
     }
 
-    FuncStatement* Declaration;
-    ExecutionContext* Closure;
+    shared_ptr<FuncStatement> Declaration;
+    shared_ptr<ExecutionContext> Closure;
 };

@@ -5,6 +5,9 @@
 
 #pragma once
 #include <string>
+#include <memory>
+
+using std::shared_ptr;
 
 class Callable;
 class Interpreter;
@@ -30,19 +33,19 @@ class Object {
     std::string Str;
     double Num;
     bool Bool;
-    Callable* Function;
+    shared_ptr<Callable> Function;
 
     std::string ToString();
 
     static Object NewStr(std::string str);
     static Object NewNum(double num);
     static Object NewBool(bool boolean);
-    static Object NewCallable(Callable* function);
+    static Object NewCallable(shared_ptr<Callable> function);
     static Object Null;
 };
 
 class Callable {
 public:
     virtual size_t arguments() = 0;
-    virtual Object call(Interpreter* interpreter, std::vector<Object> arguments) = 0;
+    virtual Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> arguments) = 0;
 };

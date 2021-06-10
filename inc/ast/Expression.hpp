@@ -36,24 +36,24 @@ public:
     ExpressionVisitor() {}
     virtual ~ExpressionVisitor() {};
     virtual T dummy() = 0;
-    virtual T visitBinaryExpression(BinaryExpression<T>* expr) = 0;
-    virtual T visitGroupingExpression(GroupingExpression<T>* expr) = 0;
-    virtual T visitUnaryExpression(UnaryExpression<T>* expr) = 0;
-    virtual T visitLiteralExpression(LiteralExpression<T>* expr) = 0;
-    virtual T visitVariableExpression(VariableExpression<T>* expr) = 0;
-    virtual T visitAssignmentExpression(AssignmentExpression<T>* expr) = 0;
-    virtual T visitLogicalExpression(LogicalExpression<T>* expr) = 0;
-    virtual T visitCallExpression(CallExpression<T>* expr) = 0;
+    virtual T visitBinaryExpression(BinaryExpression<T> &expr) = 0;
+    virtual T visitGroupingExpression(GroupingExpression<T> &expr) = 0;
+    virtual T visitUnaryExpression(UnaryExpression<T> &expr) = 0;
+    virtual T visitLiteralExpression(LiteralExpression<T> &expr) = 0;
+    virtual T visitVariableExpression(VariableExpression<T> &expr) = 0;
+    virtual T visitAssignmentExpression(AssignmentExpression<T> &expr) = 0;
+    virtual T visitLogicalExpression(LogicalExpression<T> &expr) = 0;
+    virtual T visitCallExpression(CallExpression<T> &expr) = 0;
 };
 
 template <typename T>
-class Expression {
+class Expression : std::enable_shared_from_this<Expression<T>> {
 public:
     Expression() {}
     Expression(const Expression&) = delete;
     Expression& operator=(const Expression&) = delete;
     virtual ~Expression() = default;
-    virtual T accept(ExpressionVisitor<T>* visitor) {
+    virtual T accept(shared_ptr<ExpressionVisitor<T>> visitor) {
         return visitor->dummy();
     };
 };
@@ -61,29 +61,29 @@ public:
 template <typename T>
 class BinaryExpression : public Expression<T> {
 public:
-    explicit BinaryExpression(Expression<T>* pLeft, Token pOperator, Expression<T>* pRight)
+    explicit BinaryExpression(shared_ptr<Expression<T>> pLeft, Token pOperator, shared_ptr<Expression<T>> pRight)
         : left(pLeft), right(pRight), operatorToken(pOperator) {}
 
-    T accept(ExpressionVisitor<T>* visitor) override {
-        return visitor->visitBinaryExpression(this);
+    T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
+        return visitor->visitBinaryExpression(*this);
     }
 
-    Expression<T>* left;
-    Expression<T>* right;
+    shared_ptr<Expression<T>> left;
+    shared_ptr<Expression<T>> right;
     struct Token operatorToken;
 };
 
 template <typename T>
 class GroupingExpression : public Expression<T> {
 public:
-    explicit GroupingExpression(Expression<T>* pExpression)
+    explicit GroupingExpression(shared_ptr<Expression<T>> pExpression)
         : expression(pExpression) {}
 
-    T accept(ExpressionVisitor<T>* visitor) override {
-        return visitor->visitGroupingExpression(this);
+    T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
+        return visitor->visitGroupingExpression(*this);
     }
 
-    Expression<T>* expression;
+    shared_ptr<Expression<T>> expression;
 };
 
 template <typename T>
@@ -91,8 +91,8 @@ class LiteralExpression : public Expression<T> {
 public:
     explicit LiteralExpression(T _value) : value(_value) {}
 
-    T accept(ExpressionVisitor<T>* visitor) override {
-        return visitor->visitLiteralExpression(this);
+    T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
+        return visitor->visitLiteralExpression(*this);
     }
 
     T value;
@@ -101,15 +101,15 @@ public:
 template <typename T>
 class UnaryExpression : public Expression<T> {
 public:
-    explicit UnaryExpression(Token pOperator, Expression<T>* pRight)
+    explicit UnaryExpression(Token pOperator, shared_ptr<Expression<T>> pRight)
         : operatorToken(pOperator), right(pRight) {}
 
-    T accept(ExpressionVisitor<T>* visitor) override {
-        return visitor->visitUnaryExpression(this);
+    T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
+        return visitor->visitUnaryExpression(*this);
     }
 
     struct Token operatorToken;
-    Expression<T>* right;
+    shared_ptr<Expression<T>> right;
 };
 
 template <typename T>
@@ -117,8 +117,8 @@ class VariableExpression : public Expression<T> {
 public:
     explicit VariableExpression(Token name) : Name(name) {}
 
-    T accept(ExpressionVisitor<T>* visitor) override {
-        return visitor->visitVariableExpression(this);
+    T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
+        return visitor->visitVariableExpression(*this);
     }
 
     struct Token Name;
@@ -127,43 +127,43 @@ public:
 template <typename T>
 class AssignmentExpression : public Expression<T> {
 public:
-    explicit AssignmentExpression(Token name, Expression<T>* expr) :
+    explicit AssignmentExpression(Token name, shared_ptr<Expression<T>> expr) :
         Name(name), Expr(expr) {}
 
-    T accept(ExpressionVisitor<T>* visitor) override {
-        return visitor->visitAssignmentExpression(this);
+    T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
+        return visitor->visitAssignmentExpression(*this);
     }
 
     struct Token Name;
-    Expression<T>* Expr;
+    shared_ptr<Expression<T>> Expr;
 };
 
 template <typename T>
 class LogicalExpression : public Expression<T> {
 public:
-    explicit LogicalExpression(Expression<T>* pLeft, Token pOperator, Expression<T>* pRight)
+    explicit LogicalExpression(shared_ptr<Expression<T>> pLeft, Token pOperator, shared_ptr<Expression<T>> pRight)
          : Left(pLeft), operatorToken(pOperator), Right(pRight) {}
 
-    T accept(ExpressionVisitor<T>* visitor) override {
-        return visitor->visitLogicalExpression(this);
+    T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
+        return visitor->visitLogicalExpression(*this);
     }
 
-    Expression<T>* Left;
+    shared_ptr<Expression<T>> Left;
     Token operatorToken;
-    Expression<T>* Right;
+    shared_ptr<Expression<T>> Right;
 };
 
 template <typename T>
 class CallExpression : public Expression<T> {
 public:
-    explicit CallExpression(Expression<T>* pCallee, Token pParenthesis, std::vector<Expression<T>*> pArguments)
+    explicit CallExpression(shared_ptr<Expression<T>> pCallee, Token pParenthesis, std::vector<shared_ptr<Expression<T>>> pArguments)
         : Callee(pCallee), Parenthesis(pParenthesis), Arguments(pArguments) {}
 
-    T accept(ExpressionVisitor<T>* visitor) override {
-        return visitor->visitCallExpression(this);
+    T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
+        return visitor->visitCallExpression(*this);
     }
 
-    Expression<T>* Callee;
+    shared_ptr<Expression<T>> Callee;
     Token Parenthesis;
-    std::vector<Expression<T>*> Arguments;
+    std::vector<shared_ptr<Expression<T>>> Arguments;
 };

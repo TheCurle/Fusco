@@ -6,12 +6,12 @@
 #include <interpreter/Interpreter.hpp>
 #include <interpreter/Errors.hpp>
 
-Object Interpreter::visitBinaryExpression(BinaryExpression<Object>* expr) {
-    Object left = Evaluate(expr->left);
-    Object right = Evaluate(expr->right);
+Object Interpreter::visitBinaryExpression(BinaryExpression<Object> &expr) {
+    Object left = Evaluate(expr.left);
+    Object right = Evaluate(expr.right);
 
     //! Prepared to go nuclear with the checks if necessary.
-    switch(expr->operatorToken.Type) {
+    switch(expr.operatorToken.Type) {
         case AR_MINUS:
             //CheckOperands(expr->operatorToken, left, right);
             return Object::NewNum(left.Num - right.Num);
@@ -22,7 +22,7 @@ Object Interpreter::visitBinaryExpression(BinaryExpression<Object>* expr) {
             //CheckOperands(expr->operatorToken, left, right);
             return Object::NewNum(left.Num * right.Num);
         case AR_PLUS:
-            CheckOperands(expr->operatorToken, left, right);
+            CheckOperands(expr.operatorToken, left, right);
             if(left.Type == Object::NumType && right.Type == Object::NumType)
                 return Object::NewNum(left.Num + right.Num);
 
@@ -56,28 +56,28 @@ Object Interpreter::visitBinaryExpression(BinaryExpression<Object>* expr) {
     return Object::Null;
 }
 
-Object Interpreter::visitGroupingExpression(GroupingExpression<Object>* expr) {
-    return Evaluate(expr->expression);
+Object Interpreter::visitGroupingExpression(GroupingExpression<Object> &expr) {
+    return Evaluate(expr.expression);
 }
 
-Object Interpreter::visitLiteralExpression(LiteralExpression<Object>* expr) {
-    return expr->value;
+Object Interpreter::visitLiteralExpression(LiteralExpression<Object> &expr) {
+    return expr.value;
 }
 
-Object Interpreter::visitVariableExpression(VariableExpression<Object>* expr) {
-    return Environment->get(expr->Name);
+Object Interpreter::visitVariableExpression(VariableExpression<Object> &expr) {
+    return Environment->get(expr.Name);
 }
 
-Object Interpreter::visitAssignmentExpression(AssignmentExpression<Object>* expr) {
-    Object value = Evaluate(expr->Expr);
-    Environment->assign(expr->Name, value);
+Object Interpreter::visitAssignmentExpression(AssignmentExpression<Object> &expr) {
+    Object value = Evaluate(expr.Expr);
+    Environment->assign(expr.Name, value);
     return value;
 }
 
-Object Interpreter::visitUnaryExpression(UnaryExpression<Object>* expr) {
-    Object right = Evaluate(expr->right);
+Object Interpreter::visitUnaryExpression(UnaryExpression<Object> &expr) {
+    Object right = Evaluate(expr.right);
 
-    switch(expr->operatorToken.Type) {
+    switch(expr.operatorToken.Type) {
         case AR_MINUS: return Object::NewNum(-(right.Num));
         case BOOL_EXCLAIM: return Object::NewBool(!Truthy(right));
     }
@@ -85,45 +85,45 @@ Object Interpreter::visitUnaryExpression(UnaryExpression<Object>* expr) {
     return Object::Null;
 }
 
-Object Interpreter::visitCallExpression(CallExpression<Object>* expr) {
-    Object callee = Evaluate(expr->Callee);
+Object Interpreter::visitCallExpression(CallExpression<Object> &expr) {
+    Object callee = Evaluate(expr.Callee);
     std::vector<Object> arguments;
-    for(EXPR argument : expr->Arguments) {
+    for(EXPR argument : expr.Arguments) {
         arguments.emplace_back(Evaluate(argument));
     }
 
-    Object functionHolder = Evaluate(expr->Callee);
+    Object functionHolder = Evaluate(expr.Callee);
 
     if(functionHolder.Type != Object::FunctionType) {
-        throw RuntimeError(expr->Parenthesis, "Unable to call non-function type.");
+        throw RuntimeError(expr.Parenthesis, "Unable to call non-function type.");
     }
 
-    Callable* function = functionHolder.Function;
+    shared_ptr<Callable> function = functionHolder.Function;
 
     if(arguments.size() != function->arguments()) {
         std::string message("Expected ");
         message.append(std::to_string(function->arguments())).append(" arguments, got ").append(std::to_string(arguments.size())).append(".");
 
-        throw RuntimeError(expr->Parenthesis, message);
+        throw RuntimeError(expr.Parenthesis, message);
     }
 
-    return function->call(this, arguments);
+    return function->call(shared_from_this(), arguments);
 }
 
-Object Interpreter::visitLogicalExpression(LogicalExpression<Object>* expr) {
-    Object left = Evaluate(expr->Left);
+Object Interpreter::visitLogicalExpression(LogicalExpression<Object> &expr) {
+    Object left = Evaluate(expr.Left);
 
-    if(expr->operatorToken.Type == KW_OR) {
+    if(expr.operatorToken.Type == KW_OR) {
         if(Truthy(left)) return left;
     } else {
         if(!Truthy(left)) return left;
     }
 
-    return Evaluate(expr->Right);
+    return Evaluate(expr.Right);
 }
 
-Object Interpreter::Evaluate(Expression<Object>* expr) {
-    return expr->accept(this);
+Object Interpreter::Evaluate(shared_ptr<Expression<Object>> expr) {
+    return expr->accept(shared_from_this());
 }
 
 std::string Interpreter::Stringify(Object obj) {

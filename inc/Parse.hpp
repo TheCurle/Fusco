@@ -14,7 +14,7 @@ public:
     Parser(std::vector<struct Token> pTokens)
         : tokens(pTokens), currentToken(0) {}
 
-    std::vector<Statement*> parse();
+    std::vector<shared_ptr<Statement>> parse();
 
 private:
     std::vector<struct Token> tokens;
@@ -30,18 +30,18 @@ private:
     bool endOfStream();
 
     /** Statement Parsing **/
-    std::vector<Statement*> block();
-    Statement* declaration();
-    Statement* varDeclaration();
-    Statement* statement();
-    Statement* returnStatement();
-    Statement* printStatement();
-    Statement* ifStatement();
-    Statement* whileStatement();
-    Statement* forStatement();
-    Statement* expressionStatement();
+    std::vector<shared_ptr<Statement>> block();
+    shared_ptr<Statement> declaration();
+    shared_ptr<Statement> varDeclaration();
+    shared_ptr<Statement> statement();
+    shared_ptr<Statement> returnStatement();
+    shared_ptr<Statement> printStatement();
+    shared_ptr<Statement> ifStatement();
+    shared_ptr<Statement> whileStatement();
+    shared_ptr<Statement> forStatement();
+    shared_ptr<Statement> expressionStatement();
 
-    FuncStatement* function(std::string type);
+    shared_ptr<FuncStatement> function(std::string type);
 
     EXPR expression();
     EXPR assignment();

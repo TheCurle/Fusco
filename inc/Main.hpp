@@ -6,12 +6,15 @@
 #pragma once
 #include <string>
 #include <iostream>
+#include <memory>
 #include <fstream>
 #include <interpreter/Errors.hpp>
 
 extern bool ErrorState;
 
-#define EXPR Expression<Object>*
+using std::shared_ptr;
+
+#define EXPR shared_ptr<Expression<Object>>
 #define UNUSED(x) (void)(x)
 #define INTERP_VERSION "1.9"
 

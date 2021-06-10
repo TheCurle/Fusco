@@ -5,8 +5,8 @@
 
 #include <Parse.hpp>
 
-std::vector<Statement*> Parser::parse() {
-    std::vector<Statement*> statements;
+std::vector<shared_ptr<Statement>> Parser::parse() {
+    std::vector<shared_ptr<Statement>> statements;
 
     while(!endOfStream()) {
         statements.emplace_back(declaration());
@@ -15,7 +15,7 @@ std::vector<Statement*> Parser::parse() {
     return statements;
 }
 
-Statement* Parser::declaration() {
+shared_ptr<Statement> Parser::declaration() {
     try {
         if(matchAny(KW_FUNC)) return function("function");
         if(matchAny(KW_VAR)) return varDeclaration();
@@ -28,7 +28,7 @@ Statement* Parser::declaration() {
     }
 }
 
-Statement* Parser::varDeclaration() {
+shared_ptr<Statement> Parser::varDeclaration() {
     struct Token name = verify(LI_IDENTIFIER, "Expected variable name.");
 
     EXPR initializer = nullptr;
@@ -37,21 +37,21 @@ Statement* Parser::varDeclaration() {
     }
 
     verify(LI_SEMICOLON, "Expected a semicolon after a variable declaration.");
-    return new VariableStatement(name, initializer);
+    return std::make_shared<VariableStatement>(name, initializer);
 }
 
-Statement* Parser::statement() {
+shared_ptr<Statement> Parser::statement() {
     if(matchAny(KW_IF)) return ifStatement();
     if(matchAny(KW_FOR)) return forStatement();
     if(matchAny(KW_WHILE)) return whileStatement();
     if(matchAny(KW_PRINT)) return printStatement();
     if(matchAny(KW_RETURN)) return returnStatement();
-    if(matchAny(LI_LBRACE)) return new BlockStatement(block());
+    if(matchAny(LI_LBRACE)) return std::make_shared<BlockStatement>(block());
 
     return expressionStatement();
 }
 
-Statement* Parser::returnStatement() {
+shared_ptr<Statement> Parser::returnStatement() {
     Token keyword = previous();
 
     EXPR value = nullptr;
@@ -60,11 +60,11 @@ Statement* Parser::returnStatement() {
 
     verify(LI_SEMICOLON, "Expected ; after return.");
 
-    return new ReturnStatement(keyword, value);
+    return std::make_shared<ReturnStatement>(keyword, value);
 }
 
-std::vector<Statement*> Parser::block() {
-    std::vector<Statement*> statements;
+std::vector<shared_ptr<Statement>> Parser::block() {
+    std::vector<shared_ptr<Statement>> statements;
 
     while(!check(LI_RBRACE) && !endOfStream()) {
         statements.emplace_back(declaration());
@@ -74,30 +74,30 @@ std::vector<Statement*> Parser::block() {
     return statements;
 }
 
-Statement* Parser::printStatement() {
+shared_ptr<Statement> Parser::printStatement() {
     EXPR value = expression();
     verify(LI_SEMICOLON, "Expected ';' after an expression to print");
 
-    return new PrintStatement(value);
+    return std::make_shared<PrintStatement>(value);
 }
 
-Statement* Parser::ifStatement() {
+shared_ptr<Statement> Parser::ifStatement() {
     verify(LI_LPAREN, "Expected a ( after if.");
     EXPR Condition = expression();
     verify(LI_RPAREN, "Expected a ) after the condition in if.");
 
-    Statement* Then = statement();
-    Statement* Else = nullptr;
+    shared_ptr<Statement> Then = statement();
+    shared_ptr<Statement> Else = nullptr;
 
     if(matchAny(KW_ELSE))
         Else = statement();
 
-    return new IfStatement(Condition, Then, Else);
+    return std::make_shared<IfStatement>(Condition, Then, Else);
 }
 
-Statement* Parser::forStatement() {
+shared_ptr<Statement> Parser::forStatement() {
     verify(LI_LPAREN, "Expected '(' after for.");
-    Statement* initializer;
+    shared_ptr<Statement> initializer;
 
     if(matchAny(LI_SEMICOLON))
         initializer = nullptr;
@@ -119,48 +119,48 @@ Statement* Parser::forStatement() {
 
     verify(LI_RPAREN, "Expected ')' after for.");
 
-    Statement* body = statement();
+    shared_ptr<Statement> body = statement();
 
     if(increment != nullptr) {
-        std::vector<Statement*> stmts;
+        std::vector<shared_ptr<Statement>> stmts;
         stmts.emplace_back(body);
-        stmts.emplace_back(new ExpressionStatement(increment));
-        body = new BlockStatement(stmts);
+        stmts.emplace_back(std::make_shared<ExpressionStatement>(increment));
+        body = std::make_shared<BlockStatement>(stmts);
     }
 
     if(condition == nullptr) {
-        condition = new LiteralExpression<Object>(Object::NewBool(true));
+        condition = std::make_shared<LiteralExpression<Object>>(Object::NewBool(true));
     }
-    body = new WhileStatement(condition, body);
+    body = std::make_shared<WhileStatement>(condition, body);
 
     if(initializer != nullptr) {
-        std::vector<Statement*> stmts;
+        std::vector<shared_ptr<Statement>> stmts;
         stmts.emplace_back(initializer);
         stmts.emplace_back(body);
-        body = new BlockStatement(stmts);
+        body = std::make_shared<BlockStatement>(stmts);
     }
 
     return body;
 }
 
-Statement* Parser::whileStatement() {
+shared_ptr<Statement> Parser::whileStatement() {
     verify(LI_LPAREN, "Expected a ( after while.");
     EXPR condition = expression();
     verify(LI_RPAREN, "Expected a ) after the condition in while.");
 
-    Statement* body = statement();
+    shared_ptr<Statement> body = statement();
 
-    return new WhileStatement(condition, body);
+    return std::make_shared<WhileStatement>(condition, body);
 }
 
-Statement* Parser::expressionStatement() {
+shared_ptr<Statement> Parser::expressionStatement() {
     EXPR value = expression();
     verify(LI_SEMICOLON, "Expected ';' after an expression.");
 
-    return new ExpressionStatement(value);
+    return std::make_shared<ExpressionStatement>(value);
 }
 
-FuncStatement* Parser::function(std::string type) {
+shared_ptr<FuncStatement> Parser::function(std::string type) {
     Token name = verify(LI_IDENTIFIER, std::string("Expected a ").append(type).append(" name."));
     std::vector<Token> parameters;
 
@@ -178,9 +178,9 @@ FuncStatement* Parser::function(std::string type) {
     verify(LI_RPAREN, std::string("Expected ( after ").append(type).append(" parameters."));
     verify(LI_LBRACE, std::string("Expected { before ").append(type).append(" body."));
 
-    std::vector<Statement*> body = block();
+    std::vector<shared_ptr<Statement>> body = block();
 
-    return new FuncStatement(name, parameters, body);
+    return std::make_shared<FuncStatement>(name, parameters, body);
 }
 
 EXPR Parser::expression() {
@@ -194,9 +194,9 @@ EXPR Parser::assignment() {
         Token equals = previous();
         EXPR value = assignment();
 
-        if(dynamic_cast<VariableExpression<Object>*>(expr) != nullptr) {
-            Token name = dynamic_cast<VariableExpression<Object>*>(expr)->Name;
-            return new AssignmentExpression<Object>(name, value);
+        if(dynamic_cast<VariableExpression<Object>*>(expr.get()) != nullptr) {
+            Token name = dynamic_cast<VariableExpression<Object>*>(expr.get())->Name;
+            return std::make_shared<AssignmentExpression<Object>>(name, value);
         }
 
         Error(equals, std::string("Cannot assign an r-value"));
@@ -211,7 +211,7 @@ EXPR Parser::orExpr() {
     while(matchAny(KW_OR)) {
         Token operatorToken = previous();
         EXPR right = andExpr();
-        expr = new LogicalExpression<Object>(expr, operatorToken, right);
+        expr = std::make_shared<LogicalExpression<Object>>(expr, operatorToken, right);
     }
 
     return expr;
@@ -223,7 +223,7 @@ EXPR Parser::andExpr() {
     while(matchAny(KW_AND)) {
         Token operatorToken = previous();
         EXPR right = equality();
-        expr = new LogicalExpression<Object>(expr, operatorToken, right);
+        expr = std::make_shared<LogicalExpression<Object>>(expr, operatorToken, right);
     }
 
     return expr;
@@ -235,7 +235,7 @@ EXPR Parser::equality() {
     while(matchAny(CMP_INEQ, CMP_EQUAL)) {
         struct Token operatorToken = previous();
         EXPR right = comparison();
-        expr = new BinaryExpression<Object>(expr, operatorToken, right);
+        expr = std::make_shared<BinaryExpression<Object>>(expr, operatorToken, right);
     }
 
     return expr;
@@ -247,7 +247,7 @@ EXPR Parser::comparison() {
     while(matchAny(CMP_GREATER, CMP_GREAT_EQUAL, CMP_LESS, CMP_LESS_EQUAL)) {
         struct Token operatorToken = previous();
         EXPR right = term();
-        expr = new BinaryExpression<Object>(expr, operatorToken, right);
+        expr = std::make_shared<BinaryExpression<Object>>(expr, operatorToken, right);
     }
 
     return expr;
@@ -259,7 +259,7 @@ EXPR Parser::term() {
     while(matchAny(AR_MINUS, AR_PLUS)) {
         struct Token operatorToken = previous();
         EXPR right = factor();
-        expr = new BinaryExpression<Object>(expr, operatorToken, right);
+        expr = std::make_shared<BinaryExpression<Object>>(expr, operatorToken, right);
     }
 
     return expr;
@@ -271,7 +271,7 @@ EXPR Parser::factor() {
     while(matchAny(AR_ASTERISK, AR_RSLASH)) {
         struct Token operatorToken = previous();
         EXPR right = unary();
-        expr = new BinaryExpression<Object>(expr, operatorToken, right);
+        expr = std::make_shared<BinaryExpression<Object>>(expr, operatorToken, right);
     }
 
     return expr;
@@ -281,7 +281,7 @@ EXPR Parser::unary() {
     if(matchAny(BOOL_EXCLAIM, AR_MINUS)) {
         struct Token operatorToken = previous();
         EXPR right = unary();
-        return new UnaryExpression<Object>(operatorToken, right);
+        return std::make_shared<UnaryExpression<Object>>(operatorToken, right);
     }
 
     return call();
@@ -314,27 +314,27 @@ EXPR Parser::finishCall(EXPR callee) {
 
     Token parenthesis = verify(LI_RPAREN, "Expected ')' after argument list.");
 
-    return new CallExpression<Object>(callee, parenthesis, arguments);
+    return std::make_shared<CallExpression<Object>>(callee, parenthesis, arguments);
 }
 
 EXPR Parser::primary() {
-    if(matchAny(KW_FALSE)) return new LiteralExpression(Object::NewBool(false));
-    if(matchAny(KW_TRUE)) return new LiteralExpression(Object::NewBool(true));
-    if(matchAny(KW_NULL)) return new LiteralExpression(Object::Null);
+    if(matchAny(KW_FALSE)) return std::make_shared<LiteralExpression<Object>>(Object::NewBool(false));
+    if(matchAny(KW_TRUE)) return std::make_shared<LiteralExpression<Object>>(Object::NewBool(true));
+    if(matchAny(KW_NULL)) return std::make_shared<LiteralExpression<Object>>(Object::Null);
 
     if(matchAny(LI_NUMBER))
-        return new LiteralExpression<Object>(previous().Value);
+        return std::make_shared<LiteralExpression<Object>>(previous().Value);
 
     if(matchAny(LI_STRING))
-        return new LiteralExpression<Object>(Object::NewStr(previous().Lexeme));
+        return std::make_shared<LiteralExpression<Object>>(Object::NewStr(previous().Lexeme));
 
     if(matchAny(LI_IDENTIFIER))
-        return new VariableExpression<Object>(previous());
+        return std::make_shared<VariableExpression<Object>>(previous());
 
     if(matchAny(LI_LPAREN)) {
         EXPR expr = expression();
         verify(LI_RPAREN, "Expected ')' after expression");
-        return new GroupingExpression<Object>(expr);
+        return std::make_shared<GroupingExpression<Object>>(expr);
     }
 
     throw error(peek(), "Expected an expression");

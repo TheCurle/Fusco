@@ -10,7 +10,7 @@
 
 bool ErrorState = false;
 
-static ExecutionContext* Context = new ExecutionContext();
+static shared_ptr<ExecutionContext> Context = std::make_shared<ExecutionContext>();
 static Interpreter Engine(Context);
 
 Object Object::Null;
@@ -20,7 +20,7 @@ void lex(std::string text) {
     Lexer tokenStream(text);
     auto tokens = tokenStream.ConsumeAllAndReturn();
     Parser parser(tokens);
-    std::vector<Statement*> statements = parser.parse();
+    std::vector<shared_ptr<Statement>> statements = parser.parse();
 
     if(ErrorState) return;
 

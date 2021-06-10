@@ -39,7 +39,7 @@ Object Object::NewBool(bool boolean) {
     return x;
 }
 
-Object Object::NewCallable(Callable* function) {
+Object Object::NewCallable(shared_ptr<Callable> function) {
     Object x;
     x.Type = FunctionType;
     x.Function = function;
