@@ -75,10 +75,15 @@ void Interpreter::ExecuteBlock(std::vector<shared_ptr<Statement>> statements, sh
     shared_ptr<ExecutionContext> previous = this->Environment;
 
     this->Environment = environment;
-
-    for(shared_ptr<Statement> stmt : statements) {
-        Execute(stmt);
-    }
+	
+	try {
+		for(shared_ptr<Statement> stmt : statements) {
+			Execute(stmt);
+		}
+	} catch (Return &r) {
+		this->Environment = previous; // C++ try-finally when?
+		throw r;
+	}
 
     this->Environment = previous;
 }
