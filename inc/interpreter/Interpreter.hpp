@@ -81,7 +81,7 @@ public:
 
     void ExecuteBlock(std::vector<shared_ptr<Statement>> statements, shared_ptr<ExecutionContext> environment);
 
-    Object dummy() { return Object::Null; }
+    Object dummy() override { return Object::Null; }
 
     Object print(shared_ptr<Expression<Object>> expr);
 
@@ -101,21 +101,21 @@ public:
 
     void visitReturn(ReturnStatement &stmt) override;
 
-    Object visitBinaryExpression(BinaryExpression<Object> &expr);
+    Object visitBinaryExpression(BinaryExpression<Object> &expr) override;
 
-    Object visitGroupingExpression(GroupingExpression<Object> &expr);
+    Object visitGroupingExpression(GroupingExpression<Object> &expr) override;
 
-    Object visitLiteralExpression(LiteralExpression<Object> &expr);
+    Object visitLiteralExpression(LiteralExpression<Object> &expr) override;
 
-    Object visitVariableExpression(VariableExpression<Object> &expr);
+    Object visitVariableExpression(VariableExpression<Object> &expr) override;
 
-    Object visitAssignmentExpression(AssignmentExpression<Object> &expr);
+    Object visitAssignmentExpression(AssignmentExpression<Object> &expr) override;
 
-    Object visitUnaryExpression(UnaryExpression<Object> &expr);
+    Object visitUnaryExpression(UnaryExpression<Object> &expr) override;
 
-    Object visitCallExpression(CallExpression<Object> &expr);
+    Object visitCallExpression(CallExpression<Object> &expr) override;
 
-    Object visitLogicalExpression(LogicalExpression<Object> &expr);
+    Object visitLogicalExpression(LogicalExpression<Object> &expr) override;
 private:
 
     shared_ptr<ExecutionContext> Environment;
@@ -140,7 +140,7 @@ class TreePrinter : public ExpressionVisitor<Object>,
 public:
     ~TreePrinter() {}
 
-    Object dummy() { return Object::Null; }
+    Object dummy() override { return Object::Null; }
 
     Object print(std::vector<shared_ptr<Statement>> stmt);
 
@@ -160,21 +160,21 @@ public:
 
     void visitReturn(ReturnStatement &stmt) override;
 
-    Object visitBinaryExpression(BinaryExpression<Object> &expr);
+    Object visitBinaryExpression(BinaryExpression<Object> &expr) override;
 
-    Object visitGroupingExpression(GroupingExpression<Object> &expr);
+    Object visitGroupingExpression(GroupingExpression<Object> &expr) override;
 
-    Object visitLiteralExpression(LiteralExpression<Object> &expr);
+    Object visitLiteralExpression(LiteralExpression<Object> &expr) override;
 
-    Object visitVariableExpression(VariableExpression<Object> &expr);
+    Object visitVariableExpression(VariableExpression<Object> &expr) override;
 
-    Object visitAssignmentExpression(AssignmentExpression<Object> &expr);
+    Object visitAssignmentExpression(AssignmentExpression<Object> &expr) override;
 
-    Object visitUnaryExpression(UnaryExpression<Object> &expr);
+    Object visitUnaryExpression(UnaryExpression<Object> &expr) override;
 
-    Object visitCallExpression(CallExpression<Object> &expr);
+    Object visitCallExpression(CallExpression<Object> &expr) override;
 
-    Object visitLogicalExpression(LogicalExpression<Object> &expr);
+    Object visitLogicalExpression(LogicalExpression<Object> &expr) override;
 private:
     template <class ... Args>
     std::string parenthesize(std::string Header, Args ... args);

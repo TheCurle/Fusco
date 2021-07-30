@@ -46,6 +46,7 @@ class Object {
 
 class Callable {
 public:
+    virtual ~Callable() = 0;
     virtual size_t arguments() = 0;
     virtual Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> arguments) = 0;
 };

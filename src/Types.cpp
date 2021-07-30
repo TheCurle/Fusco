@@ -45,3 +45,5 @@ Object Object::NewCallable(shared_ptr<Callable> function) {
     x.Function = function;
     return x;
 }
+
+Callable::~Callable() {}
