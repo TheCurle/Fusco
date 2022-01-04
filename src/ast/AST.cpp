@@ -20,8 +20,10 @@ static std::string nest(std::string input) {
 }
 
 Object TreePrinter::print(std::vector<shared_ptr<Statement>> stmts) {
+    std::shared_ptr<TreePrinter> shared = shared_from_this();
+    
     for(auto stmt : stmts) {
-        stmt->accept(shared_from_this());
+        stmt->accept(shared);
     }
 
     std::cout << std::endl;

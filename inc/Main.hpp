@@ -30,9 +30,10 @@ public:
         ErrorState = true;
     }
 
-    void Error(RuntimeError error) {
+    RuntimeError Error(RuntimeError error) {
         Report(error.Cause.Line, "", error.Message);
         ErrorState = true;
+        return error;
     }
 private:
     void Report(size_t Line, std::string Where, std::string Message) {

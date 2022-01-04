@@ -6,12 +6,15 @@
 #include <memory>
 #include <map>
 #include <algorithm>
+#include <stack>
+#include <map>
+#include <string>
 #include <ast/Statement.hpp>
 #include <interpreter/Globals.hpp>
 
 using std::shared_ptr;
 
-class ExecutionContext : public std::enable_shared_from_this<ExecutionContext> {
+class ExecutionContext : Common, public std::enable_shared_from_this<ExecutionContext> {
     public:
 
     ExecutionContext() {
@@ -30,7 +33,22 @@ class ExecutionContext : public std::enable_shared_from_this<ExecutionContext> {
         if(Enclosing != nullptr)
             return Enclosing->get(name);
 
-        throw RuntimeError(name, std::string("Unable to find variable ").append(name.Lexeme));
+        throw Error(RuntimeError(name, std::string("Unable to find variable ").append(name.Lexeme)));
+    }
+
+    Object getAt(int depth, std::string name) {
+        return walk(depth)->ObjectMap.at(name);
+    }
+
+    void assignAt(int depth, Token name, Object value) {
+        walk(depth)->ObjectMap.at(name.Lexeme) = value;
+    }
+
+    shared_ptr<ExecutionContext> walk(int depth) {
+        shared_ptr<ExecutionContext> env = shared_from_this();
+        for (int i = 0; i < depth; i++)
+            env = env->Enclosing;
+        return env;
     }
 
     void define(struct Token name, Object obj) {
@@ -38,7 +56,7 @@ class ExecutionContext : public std::enable_shared_from_this<ExecutionContext> {
             ObjectMap.find(name.Lexeme);
 
         if (it != ObjectMap.end())
-            throw RuntimeError(name, std::string("Redefinition of variable ").append(name.Lexeme));
+            throw Error(RuntimeError(name, std::string("Redefinition of variable ").append(name.Lexeme)));
 
         ObjectMap.emplace(name.Lexeme, obj);
     }
@@ -76,6 +94,8 @@ public:
     }
 
     shared_ptr<ExecutionContext> Globals;
+
+    void resolve(Expression<Object>* expr, int depth);
 
     void Interpret(std::vector<shared_ptr<Statement>> expr);
 
@@ -120,6 +140,8 @@ private:
 
     shared_ptr<ExecutionContext> Environment;
 
+    std::map<Expression<Object>*, int> Locals;
+
     void Execute(shared_ptr<Statement> stmt);
 
     Object Evaluate(shared_ptr<Expression<Object>> expr);
@@ -131,8 +153,78 @@ private:
 
     void CheckOperand(struct Token operatorToken, Object operand);
     void CheckOperands(struct Token operatorToken, Object left, Object right);
+
+    Object lookupVariable(Token name, Expression<Object>* expr);
+
 };
 
+class Resolver : public ExpressionVisitor<Object>,
+                 public StatementVisitor,
+                 public Common,
+                 public std::enable_shared_from_this<Resolver> {
+public:
+    Resolver(std::shared_ptr<Interpreter> interp) { 
+        scopes = std::vector<std::map<std::string, bool>>();
+        interpreter = interp;
+        currentFunction = FunctionType::NONE;
+    }
+
+    ~Resolver() {}
+
+    Object dummy() override { return Object::Null; }
+
+    void resolve(std::shared_ptr<Statement> statement);
+
+    void resolve(EXPR expression);
+
+    void resolveLocal(Expression<Object>*, Token name);
+
+    void resolveAll(std::vector<std::shared_ptr<Statement>> statements);
+
+    void visitExpression(ExpressionStatement &stmt) override;
+
+    void visitPrint(PrintStatement &stmt) override;
+
+    void visitVariable(VariableStatement &stmt) override;
+
+    void visitIf(IfStatement &stmt) override;
+
+    void visitWhile(WhileStatement &stmt) override;
+
+    void visitBlock(BlockStatement &stmt) override;
+
+    void visitFunc(FuncStatement &stmt) override;
+
+    void visitReturn(ReturnStatement &stmt) override;
+
+    Object visitBinaryExpression(BinaryExpression<Object> &expr) override;
+
+    Object visitGroupingExpression(GroupingExpression<Object> &expr) override;
+
+    Object visitLiteralExpression(LiteralExpression<Object> &expr) override;
+
+    Object visitVariableExpression(VariableExpression<Object> &expr) override;
+
+    Object visitAssignmentExpression(AssignmentExpression<Object> &expr) override;
+
+    Object visitUnaryExpression(UnaryExpression<Object> &expr) override;
+
+    Object visitCallExpression(CallExpression<Object> &expr) override;
+
+    Object visitLogicalExpression(LogicalExpression<Object> &expr) override;
+private:
+    std::vector<std::map<std::string, bool>> scopes;
+    FunctionType currentFunction;
+    std::shared_ptr<Interpreter> interpreter;
+
+    void beginScope();
+    void endScope();
+
+    void declare(Token name);
+    void define(Token name);
+
+    void resolveFunction(FuncStatement &stmt, FunctionType type);
+};
 
 class TreePrinter : public ExpressionVisitor<Object>,
                     public StatementVisitor,

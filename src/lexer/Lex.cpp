@@ -7,7 +7,7 @@
 
 /**
  * This lexer is taken directly from the Erythro compiler.
- * http://git.ansan.io/Erythro
+ * https://git.ansan.io/Erythro
  * It therefore has extraneous features that may not be completely needed by Fusco,
  * but are nonetheless good to have.
  */

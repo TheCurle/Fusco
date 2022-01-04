@@ -7,13 +7,17 @@
 #include <interpreter/Interpreter.hpp>
 #include <interpreter/Errors.hpp>
 
+void Interpreter::resolve(Expression<Object>* expr, int depth) {
+    Locals.at(expr) = depth;
+}
+
 void Interpreter::Interpret(std::vector<shared_ptr<Statement>> statements) {
     try {
         for(auto value: statements) {
             Execute(value);
         }
     } catch (RuntimeError &e) {
-        Error(e);
+        std::cout << e.Message << ": " << e.Cause.Lexeme << std::endl;
     }
 }
 

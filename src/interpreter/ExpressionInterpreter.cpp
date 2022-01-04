@@ -6,6 +6,14 @@
 #include <interpreter/Interpreter.hpp>
 #include <interpreter/Errors.hpp>
 
+Object Interpreter::lookupVariable(Token name, Expression<Object>* expr) {
+    if (Locals.find(expr) != Locals.end())
+        return Environment->getAt(Locals.at(expr), name.Lexeme);
+    else
+        return Globals->get(name);
+    
+}
+
 Object Interpreter::visitBinaryExpression(BinaryExpression<Object> &expr) {
     Object left = Evaluate(expr.left);
     Object right = Evaluate(expr.right);
@@ -65,12 +73,17 @@ Object Interpreter::visitLiteralExpression(LiteralExpression<Object> &expr) {
 }
 
 Object Interpreter::visitVariableExpression(VariableExpression<Object> &expr) {
-    return Environment->get(expr.Name);
+    return lookupVariable(expr.Name, &expr);
 }
 
 Object Interpreter::visitAssignmentExpression(AssignmentExpression<Object> &expr) {
     Object value = Evaluate(expr.Expr);
-    Environment->assign(expr.Name, value);
+
+    if (Locals.find(&expr) != Locals.end())
+        Environment->assignAt(Locals.at(&expr), expr.Name, value);
+    else
+        Globals->assign(expr.Name, value);
+
     return value;
 }
 
@@ -95,7 +108,7 @@ Object Interpreter::visitCallExpression(CallExpression<Object> &expr) {
     Object functionHolder = Evaluate(expr.Callee);
 
     if(functionHolder.Type != Object::FunctionType) {
-        throw RuntimeError(expr.Parenthesis, "Unable to call non-function type.");
+        throw Error(RuntimeError(expr.Parenthesis, "Unable to call non-function type."));
     }
 
     shared_ptr<Callable> function = functionHolder.Function;
@@ -104,7 +117,7 @@ Object Interpreter::visitCallExpression(CallExpression<Object> &expr) {
         std::string message("Expected ");
         message.append(std::to_string(function->arguments())).append(" arguments, got ").append(std::to_string(arguments.size())).append(".");
 
-        throw RuntimeError(expr.Parenthesis, message);
+        throw Error(RuntimeError(expr.Parenthesis, message));
     }
 
     return function->call(shared_from_this(), arguments);
@@ -164,7 +177,7 @@ bool Interpreter::IsEqual(Object a, Object b) {
 void Interpreter::CheckOperand(struct Token operatorToken, Object operand) {
     if(operand.Type == Object::NumType) return;
 
-    throw RuntimeError(operatorToken, "This operation can only be performed on a Number.");
+    throw Error(RuntimeError(operatorToken, "This operation can only be performed on a Number."));
 }
 
 void Interpreter::CheckOperands(struct Token operatorToken, Object left, Object right) {
@@ -173,9 +186,9 @@ void Interpreter::CheckOperands(struct Token operatorToken, Object left, Object 
             if((left.Type == right.Type && ((left.Type == Object::NumType) || (left.Type == Object::StrType)))
                     || (left.Type == Object::StrType || right.Type == Object::StrType))
                 return;
-            throw RuntimeError(operatorToken, "Only strings and numbers may be added to each other.");
+            throw Error(RuntimeError(operatorToken, "Only strings and numbers may be added to each other."));
             break;
     }
 
-    throw RuntimeError(operatorToken, "Unknown syntax error.");
+    throw Error(RuntimeError(operatorToken, "Unknown syntax error."));
 }

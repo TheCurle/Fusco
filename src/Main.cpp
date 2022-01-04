@@ -3,40 +3,49 @@
  *   FUSCO*
  **********/
 
-#include <lexer/Lex.hpp>
 #include <Parse.hpp>
 #include <ast/Expression.hpp>
 #include <interpreter/Interpreter.hpp>
+#include <lexer/Lex.hpp>
 
 bool ErrorState = false;
 
-static shared_ptr<ExecutionContext> Context = std::make_shared<ExecutionContext>();
-static Interpreter Engine(Context);
+static shared_ptr<ExecutionContext> Context =
+    std::make_shared<ExecutionContext>();
+static shared_ptr<Interpreter> Engine = std::make_shared<Interpreter>(Context);
 
 Object Object::Null;
 
 void lex(std::string text) {
+    try {
+        Lexer tokenStream(text);
+        auto tokens = tokenStream.ConsumeAllAndReturn();
 
-    Lexer tokenStream(text);
-    auto tokens = tokenStream.ConsumeAllAndReturn();
-    Parser parser(tokens);
-    std::vector<shared_ptr<Statement>> statements = parser.parse();
+        Parser parser(tokens);
+        std::vector<shared_ptr<Statement>> statements = parser.parse();
 
-    if(ErrorState) return;
+        if(ErrorState) return;
 
-    TreePrinter printer;
-    printer.print(statements);
+        std::shared_ptr<TreePrinter> printer = std::make_shared<TreePrinter>();
+        printer->print(statements);
 
-    Engine.Interpret(statements);
+        std::shared_ptr<Resolver> resolver = std::make_shared<Resolver>(Engine);
+        resolver->resolveAll(statements);
+
+        if(ErrorState) return;
+        
+        Engine->Interpret(statements);
+
+    } catch (std::exception& e) {
+        std::cout << "EXCEPT: " << e.what() << std::endl;
+    }
 }
 
 int main(int argc, char** argv) {
-
     Object::Null.Type = Object::NullType;
 
     std::cout << "Fusco Interpreter, version " << INTERP_VERSION << std::endl;
-    std::cout << "20/05/21, Curle" << std::endl
-                  << std::endl;
+    std::cout << "20/05/21, Curle" << std::endl << std::endl;
 
     if (argc < 2) {
         // Emulate a REPL (Read, Evaluate, Print, Loop)
@@ -51,9 +60,8 @@ int main(int argc, char** argv) {
         std::ifstream File(argv[1]);
 
         std::string str((std::istreambuf_iterator<char>(File)),
-                 std::istreambuf_iterator<char>());
+                        std::istreambuf_iterator<char>());
 
         lex(str);
     }
 }
-

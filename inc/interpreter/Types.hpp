@@ -6,6 +6,7 @@
 #pragma once
 #include <string>
 #include <memory>
+#include <vector>
 
 using std::shared_ptr;
 
@@ -42,6 +43,11 @@ class Object {
     static Object NewBool(bool boolean);
     static Object NewCallable(shared_ptr<Callable> function);
     static Object Null;
+};
+
+enum FunctionType {
+    NONE,
+    FUNCTION
 };
 
 class Callable {
