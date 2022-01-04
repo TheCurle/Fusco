@@ -78,6 +78,16 @@ void TreePrinter::visitFunc(FuncStatement &stmt) {
     std::cout << std::endl;
 }
 
+void TreePrinter::visitClass(ClassStatement &stmt) {
+    std::cout << std::string("Class ").append(stmt.name.Lexeme) << std::endl;
+    std::cout << "\tMethods: ";
+    for(std::shared_ptr<FuncStatement> method : stmt.functions) {
+        std::cout << nest("-> ");
+        method->accept(shared_from_this());
+    }
+    std::cout << std::endl;
+}
+
 void TreePrinter::visitReturn(ReturnStatement &stmt) {
     std::cout << parenthesize("return", &stmt.Value) << std::endl;
 }

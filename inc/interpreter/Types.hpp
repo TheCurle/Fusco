@@ -13,6 +13,7 @@ using std::shared_ptr;
 class Callable;
 class Interpreter;
 class FuncStatement;
+class FClass;
 
 class Object {
     public:
@@ -25,8 +26,8 @@ class Object {
         NumType,
         BoolType,
         NullType,
-        FunctionType/*,
-        ClassType,
+        FunctionType,
+        ClassType /*,
         UnknownType*/
     } ObjectTypes;
 
@@ -35,6 +36,7 @@ class Object {
     double Num;
     bool Bool;
     shared_ptr<Callable> Function;
+    shared_ptr<FClass> Class;
 
     std::string ToString();
 
@@ -42,6 +44,7 @@ class Object {
     static Object NewNum(double num);
     static Object NewBool(bool boolean);
     static Object NewCallable(shared_ptr<Callable> function);
+    static Object NewClass(shared_ptr<FClass> fclass);
     static Object Null;
 };
 
@@ -55,4 +58,12 @@ public:
     virtual ~Callable() = 0;
     virtual size_t arguments() = 0;
     virtual Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> arguments) = 0;
+};
+
+
+class FClass {
+    public:
+    FClass(std::string pName) : Name(pName) {}
+
+    std::string Name;
 };

@@ -94,6 +94,11 @@ void Resolver::visitFunc(FuncStatement &stmt) {
     resolveFunction(stmt, FunctionType::FUNCTION);
 }
 
+void Resolver::visitClass(ClassStatement &stmt) {
+    declare(stmt.name);
+    define(stmt.name);
+}
+
 void Resolver::resolveFunction(FuncStatement &stmt, FunctionType type) {
     FunctionType enclosingType = currentFunction;
     currentFunction = type;

@@ -40,7 +40,8 @@ private:
     shared_ptr<Statement> whileStatement();
     shared_ptr<Statement> forStatement();
     shared_ptr<Statement> expressionStatement();
-
+    
+    shared_ptr<ClassStatement> classDeclaration();
     shared_ptr<FuncStatement> function(std::string type);
 
     EXPR expression();

@@ -12,6 +12,7 @@ std::string Object::ToString() {
         case StrType: return Str;
         case BoolType: return Bool ? "true" : "false";
         case NullType: return "null";
+        case ClassType: return Class->Name;
         case NumType: return std::to_string(Num);
         case FunctionType: return "func";
     }
@@ -43,6 +44,13 @@ Object Object::NewCallable(shared_ptr<Callable> function) {
     Object x;
     x.Type = FunctionType;
     x.Function = function;
+    return x;
+}
+
+Object Object::NewClass(shared_ptr<FClass> fclass) {
+    Object x;
+    x.Type = ClassType;
+    x.Class = fclass;
     return x;
 }
 

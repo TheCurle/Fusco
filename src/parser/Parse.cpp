@@ -17,6 +17,7 @@ std::vector<shared_ptr<Statement>> Parser::parse() {
 
 shared_ptr<Statement> Parser::declaration() {
     try {
+        if(matchAny(KW_CLASS)) return classDeclaration();
         if(matchAny(KW_FUNC)) return function("function");
         if(matchAny(KW_VAR)) return varDeclaration();
 
@@ -181,6 +182,20 @@ shared_ptr<FuncStatement> Parser::function(std::string type) {
     std::vector<shared_ptr<Statement>> body = block();
 
     return std::make_shared<FuncStatement>(name, parameters, body);
+}
+
+shared_ptr<ClassStatement> Parser::classDeclaration() {
+    Token name = verify(LI_IDENTIFIER, "Expected a class name.");
+    verify(LI_LBRACE, "Expected a block start after a class body.");
+
+    std::vector<std::shared_ptr<FuncStatement>> functions;
+
+    while(!check(LI_RBRACE) && !endOfStream()) 
+        functions.emplace_back(function("method"));
+
+    verify(LI_RBRACE, "Expected a block end for a class.");
+
+    return std::make_shared<ClassStatement>(name, functions);
 }
 
 EXPR Parser::expression() {

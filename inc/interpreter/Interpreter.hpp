@@ -119,6 +119,8 @@ public:
 
     void visitFunc(FuncStatement &stmt) override;
 
+    void visitClass(ClassStatement &stmt) override;
+
     void visitReturn(ReturnStatement &stmt) override;
 
     Object visitBinaryExpression(BinaryExpression<Object> &expr) override;
@@ -194,6 +196,8 @@ public:
     void visitBlock(BlockStatement &stmt) override;
 
     void visitFunc(FuncStatement &stmt) override;
+    
+    void visitClass(ClassStatement &stmt) override;
 
     void visitReturn(ReturnStatement &stmt) override;
 
@@ -249,6 +253,8 @@ public:
     void visitBlock(BlockStatement &stmt) override;
 
     void visitFunc(FuncStatement &stmt) override;
+    
+    void visitClass(ClassStatement &stmt) override;
 
     void visitReturn(ReturnStatement &stmt) override;
 

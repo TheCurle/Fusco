@@ -62,6 +62,12 @@ void Interpreter::visitFunc(FuncStatement &stmt) {
     Environment->define(stmt.Name, Object::NewCallable(func));
 }
 
+void Interpreter::visitClass(ClassStatement &stmt) {
+    Environment->define(stmt.name, Object::Null);
+    shared_ptr<FClass> fclass = std::make_shared<FClass>(stmt.name.Lexeme);
+    Environment->assign(stmt.name, Object::NewClass(fclass));
+}
+
 void Interpreter::visitReturn(ReturnStatement &stmt) {
     Object value = Object::Null;
 
