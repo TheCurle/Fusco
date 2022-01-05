@@ -107,11 +107,12 @@ Object Interpreter::visitCallExpression(CallExpression<Object> &expr) {
 
     Object functionHolder = Evaluate(expr.Callee);
 
-    if(functionHolder.Type != Object::FunctionType) {
+    if(functionHolder.Type != Object::FunctionType && functionHolder.Type != Object::ClassType) {
         throw Error(RuntimeError(expr.Parenthesis, "Unable to call non-function type."));
     }
 
-    shared_ptr<Callable> function = functionHolder.Function;
+    // If we're trying to execute a function, use the function. Otherwise, we're calling a constructor, so use the containing class.
+    shared_ptr<Callable> function = functionHolder.Type == Object::FunctionType ? functionHolder.Function : functionHolder.ClassDefinition;
 
     if(arguments.size() != function->arguments()) {
         std::string message("Expected ");

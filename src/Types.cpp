@@ -12,7 +12,8 @@ std::string Object::ToString() {
         case StrType: return Str;
         case BoolType: return Bool ? "true" : "false";
         case NullType: return "null";
-        case ClassType: return Class->Name;
+        case ClassType: return ClassDefinition->Name;
+        case InstanceType: return "Instance of " + InstanceOf->fclass->Name;
         case NumType: return std::to_string(Num);
         case FunctionType: return "func";
     }
@@ -47,10 +48,17 @@ Object Object::NewCallable(shared_ptr<Callable> function) {
     return x;
 }
 
-Object Object::NewClass(shared_ptr<FClass> fclass) {
+Object Object::NewClassDefinition(shared_ptr<FClass> fclass) {
     Object x;
     x.Type = ClassType;
-    x.Class = fclass;
+    x.ClassDefinition = fclass;
+    return x;
+}
+
+Object Object::NewInstance(shared_ptr<FClass> fclass) {
+    Object x;
+    x.Type = InstanceType;
+    x.InstanceOf = std::make_shared<Instance>(fclass);
     return x;
 }
 

@@ -8,12 +8,15 @@
 #include <memory>
 #include <vector>
 
+#define UNUSED(x) (void)(x)
+
 using std::shared_ptr;
 
 class Callable;
 class Interpreter;
 class FuncStatement;
 class FClass;
+class Instance;
 
 class Object {
     public:
@@ -27,7 +30,8 @@ class Object {
         BoolType,
         NullType,
         FunctionType,
-        ClassType /*,
+        ClassType,
+        InstanceType /*,
         UnknownType*/
     } ObjectTypes;
 
@@ -36,7 +40,8 @@ class Object {
     double Num;
     bool Bool;
     shared_ptr<Callable> Function;
-    shared_ptr<FClass> Class;
+    shared_ptr<FClass> ClassDefinition;
+    shared_ptr<Instance> InstanceOf;
 
     std::string ToString();
 
@@ -44,7 +49,8 @@ class Object {
     static Object NewNum(double num);
     static Object NewBool(bool boolean);
     static Object NewCallable(shared_ptr<Callable> function);
-    static Object NewClass(shared_ptr<FClass> fclass);
+    static Object NewClassDefinition(shared_ptr<FClass> fclass);
+    static Object NewInstance(shared_ptr<FClass> classToInstantiate);
     static Object Null;
 };
 
@@ -60,10 +66,24 @@ public:
     virtual Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> arguments) = 0;
 };
 
+class Instance {
+    public:
+    Instance(shared_ptr<FClass> classToInstantiate) : fclass(classToInstantiate) {}
 
-class FClass {
+    shared_ptr<FClass> fclass;
+};
+
+class FClass : public Callable, public std::enable_shared_from_this<FClass> {
     public:
     FClass(std::string pName) : Name(pName) {}
+    ~FClass() {}
+
+    size_t arguments() { return 0; }
+    Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params) {
+        UNUSED(interpreter);
+        UNUSED(params);
+        return Object::NewInstance(shared_from_this());
+    }
 
     std::string Name;
 };
