@@ -39,9 +39,9 @@ jobs:
       # Build your program with the given configuration
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
       
-    - name: Dump files
+    - name: Rename build artifact
       # Make sure that file names are unique per build platform.
-      run: ls .
+      run: mv build/fusco build/fusco-${{ matrix.os }}
       
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2.3.1
@@ -49,4 +49,4 @@ jobs:
         # Artifact name
         name: fusco-${{ matrix.os }} # optional, default is artifact
         # A file, directory or wildcard pattern that describes what to upload
-        path: ./
+        path: build/fusco-${{ matrix.os }}
