@@ -41,6 +41,7 @@ jobs:
       
     - name: Rename build artifact
       # Make sure that file names are unique per build platform.
+      shell: bash
       run: mv build/fusco build/fusco-${{ matrix.os }}
       
     - name: Upload a Build Artifact
