@@ -41,7 +41,7 @@ jobs:
       
     - name: Rename
       # Make sure that file names are unique per build platform.
-      run: cp fusco fusco-${{ matrix.os }}
+      run: cp ./fusco* ./fusco-${{ matrix.os }}
       
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2.3.1
