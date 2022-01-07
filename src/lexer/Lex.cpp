@@ -362,6 +362,11 @@ void Lexer::Advance() {
             Token->Type = LI_EOF;
             return;
 
+        case '.':
+            Token->Lexeme = Char;
+            Token->Type = LI_PERIOD;
+            break;
+
         case '+':
             // + can be either "+" or "++".
             Char = NextChar();

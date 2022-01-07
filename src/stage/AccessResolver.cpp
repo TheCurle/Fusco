@@ -3,7 +3,6 @@
  *  FUSCO  *
  ***********/
 
-#include <interpreter/Errors.hpp>
 #include <interpreter/Interpreter.hpp>
 #include <iostream>
 
@@ -176,5 +175,16 @@ Object Resolver::visitLogicalExpression(LogicalExpression<Object> &expr) {
     resolve(expr.Left);
     resolve(expr.Right);
     
+    return Object::Null;
+}
+
+Object Resolver::visitGetExpression(GetExpression<Object> &expr) {
+    resolve(expr.Obj);
+    return Object::Null;
+}
+
+Object Resolver::visitSetExpression(SetExpression<Object> &expr) {
+    resolve(expr.Value);
+    resolve(expr.Obj);
     return Object::Null;
 }

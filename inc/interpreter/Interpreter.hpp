@@ -138,6 +138,10 @@ public:
     Object visitCallExpression(CallExpression<Object> &expr) override;
 
     Object visitLogicalExpression(LogicalExpression<Object> &expr) override;
+
+    Object visitGetExpression(GetExpression<Object> &expr) override;
+    
+    Object visitSetExpression(SetExpression<Object> &expr) override;
 private:
 
     shared_ptr<ExecutionContext> Environment;
@@ -216,6 +220,10 @@ public:
     Object visitCallExpression(CallExpression<Object> &expr) override;
 
     Object visitLogicalExpression(LogicalExpression<Object> &expr) override;
+
+    Object visitGetExpression(GetExpression<Object> &expr) override;
+    
+    Object visitSetExpression(SetExpression<Object> &expr) override;
 private:
     std::vector<std::map<std::string, bool>> scopes;
     FunctionType currentFunction;
@@ -273,6 +281,10 @@ public:
     Object visitCallExpression(CallExpression<Object> &expr) override;
 
     Object visitLogicalExpression(LogicalExpression<Object> &expr) override;
+    
+    Object visitGetExpression(GetExpression<Object> &expr) override;
+
+    Object visitSetExpression(SetExpression<Object> &expr) override;
 private:
     template <class ... Args>
     std::string parenthesize(std::string Header, Args ... args);

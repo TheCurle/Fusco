@@ -4,7 +4,6 @@
  ***********/
 
 #include <interpreter/Interpreter.hpp>
-#include <interpreter/Errors.hpp>
 
 Object Interpreter::lookupVariable(Token name, Expression<Object>* expr) {
     if (Locals.find(expr) != Locals.end())
@@ -134,6 +133,25 @@ Object Interpreter::visitLogicalExpression(LogicalExpression<Object> &expr) {
     }
 
     return Evaluate(expr.Right);
+}
+
+
+Object Interpreter::visitGetExpression(GetExpression<Object> &expr) {
+    Object obj = Evaluate(expr.Obj);
+    if(obj.Type == Object::ObjectTypes::InstanceType)
+        return obj.InstanceOf->get(expr.Name);
+
+    throw Error(RuntimeError(expr.Name, "Unable to retrieve a property of a non-instance type."));
+}
+
+Object Interpreter::visitSetExpression(SetExpression<Object> &expr) {
+    Object obj = Evaluate(expr.Obj);
+    if(!(obj.Type == Object::ObjectTypes::InstanceType))
+        throw Error(RuntimeError(expr.Name, "Unable to retrieve a property of a non-instance type."));
+
+    Object value = Evaluate(expr.Value);
+    obj.InstanceOf->set(expr.Name, value);
+    return value;
 }
 
 Object Interpreter::Evaluate(shared_ptr<Expression<Object>> expr) {

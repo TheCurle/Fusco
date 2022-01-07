@@ -209,9 +209,11 @@ EXPR Parser::assignment() {
         Token equals = previous();
         EXPR value = assignment();
 
-        if(dynamic_cast<VariableExpression<Object>*>(expr.get()) != nullptr) {
-            Token name = dynamic_cast<VariableExpression<Object>*>(expr.get())->Name;
+        if(auto get = dynamic_cast<VariableExpression<Object>*>(expr.get())) {
+            Token name = get->Name;
             return std::make_shared<AssignmentExpression<Object>>(name, value);
+        } else if(auto get = dynamic_cast<GetExpression<Object>*>(expr.get())) {
+            return std::make_shared<SetExpression<Object>>(get->Obj, get->Name, value);
         }
 
         Error(equals, std::string("Cannot assign an r-value"));
@@ -308,6 +310,9 @@ EXPR Parser::call() {
     while(true) {
         if(matchAny(LI_LPAREN)) {
             expr = finishCall(expr);
+        } else if (matchAny(LI_PERIOD)) {
+            Token name = verify(LI_IDENTIFIER, "Expected a property to retrieve.");
+            expr = std::make_shared<GetExpression<Object>>(expr, name);
         } else {
             break;
         }

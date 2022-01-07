@@ -29,6 +29,12 @@ class LogicalExpression;
 template <typename T>
 class CallExpression;
 
+template <typename T>
+class GetExpression;
+
+template <typename T>
+class SetExpression;
+
 
 template <typename T>
 class ExpressionVisitor {
@@ -44,6 +50,8 @@ public:
     virtual T visitAssignmentExpression(AssignmentExpression<T> &expr) = 0;
     virtual T visitLogicalExpression(LogicalExpression<T> &expr) = 0;
     virtual T visitCallExpression(CallExpression<T> &expr) = 0;
+    virtual T visitGetExpression(GetExpression<T> &expr) = 0;
+    virtual T visitSetExpression(SetExpression<T> &expr) = 0;
 };
 
 template <typename T>
@@ -166,4 +174,33 @@ public:
     shared_ptr<Expression<T>> Callee;
     Token Parenthesis;
     std::vector<shared_ptr<Expression<T>>> Arguments;
+};
+
+template <typename T>
+class GetExpression : public Expression<T> {
+public:
+    explicit GetExpression(shared_ptr<Expression<T>> pObject, Token pName)
+       : Obj(pObject), Name(pName) {}
+
+    T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
+        return visitor->visitGetExpression(*this);
+    }
+    
+    shared_ptr<Expression<T>> Obj;
+    Token Name;
+};
+
+template <typename T>
+class SetExpression : public Expression<T> {
+public:
+    explicit SetExpression(shared_ptr<Expression<T>> pObject, Token pName, shared_ptr<Expression<T>> pValue)
+       : Obj(pObject), Name(pName), Value(pValue) {}
+
+    T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
+        return visitor->visitSetExpression(*this);
+    }
+    
+    shared_ptr<Expression<T>> Obj;
+    Token Name;
+    shared_ptr<Expression<T>> Value;
 };

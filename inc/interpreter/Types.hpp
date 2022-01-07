@@ -6,6 +6,7 @@
 #pragma once
 #include <string>
 #include <memory>
+#include <map>
 #include <vector>
 
 #define UNUSED(x) (void)(x)
@@ -54,6 +55,33 @@ class Object {
     static Object Null;
 };
 
+struct Token {
+    int Type;
+    size_t Line;
+    std::string Lexeme;
+    Object Value;
+};
+
+class RuntimeError: public std::exception {
+public:
+    struct Token Cause;
+    std::string Message;
+
+    RuntimeError(struct Token cause, std::string message) :
+        Cause(cause), Message(message) {}
+
+    virtual const char* Why() const throw() {
+        return Message.c_str();
+    }
+};
+
+class Return : public std::exception {
+public:
+    Object Value;
+
+    Return(Object value) : Value(value) {}
+};
+
 enum FunctionType {
     NONE,
     FUNCTION
@@ -70,7 +98,18 @@ class Instance {
     public:
     Instance(shared_ptr<FClass> classToInstantiate) : fclass(classToInstantiate) {}
 
+    Object get(Token name) {
+        if (fields.find(name.Lexeme) != fields.end())
+            return fields.at(name.Lexeme);
+        throw RuntimeError(name, "No such property " + name.Lexeme);
+    }
+
+    void set(Token name, Object value) {
+        fields.emplace(name.Lexeme, value);
+    }
+
     shared_ptr<FClass> fclass;
+    std::map<std::string, Object> fields;
 };
 
 class FClass : public Callable, public std::enable_shared_from_this<FClass> {

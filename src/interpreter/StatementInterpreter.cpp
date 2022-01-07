@@ -5,7 +5,6 @@
 
 #include <iostream>
 #include <interpreter/Interpreter.hpp>
-#include <interpreter/Errors.hpp>
 
 void Interpreter::resolve(Expression<Object>* expr, int depth) {
     Locals.at(expr) = depth;

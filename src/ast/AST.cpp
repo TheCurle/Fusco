@@ -146,6 +146,14 @@ Object TreePrinter::visitLogicalExpression(LogicalExpression<Object> &expr) {
     return Object::NewStr(parenthesize(expr.operatorToken.Lexeme, &expr.Left, &expr.Right));
 }
 
+Object TreePrinter::visitGetExpression(GetExpression<Object> &expr) {
+    return Object::NewStr(parenthesize("get " + expr.Name.Lexeme, &expr.Obj));
+}
+
+Object TreePrinter::visitSetExpression(SetExpression<Object> &expr) {
+    return Object::NewStr(parenthesize("set " + expr.Name.Lexeme, &expr.Obj, &expr.Value)); 
+}
+
 template <class... Args>
 std::string TreePrinter::parenthesize(std::string Header, Args... args) {
     std::string builder("(");

@@ -9,7 +9,6 @@
 #include <vector>
 #include <Main.hpp>
 #include <interpreter/Types.hpp>
-#include <lexer/Token.hpp>
 
 /*
  * A lexeme is the largest representable packet of information that the lexer can output.

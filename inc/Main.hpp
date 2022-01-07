@@ -8,7 +8,7 @@
 #include <iostream>
 #include <memory>
 #include <fstream>
-#include <interpreter/Errors.hpp>
+#include <interpreter/Types.hpp>
 
 extern bool ErrorState;
 
