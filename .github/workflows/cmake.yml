@@ -54,4 +54,4 @@ jobs:
         # Artifact name
         name: fusco-${{ matrix.os }} # optional, default is artifact
         # A file, directory or wildcard pattern that describes what to upload
-        path: build/fusco-${{ matrix.os }}.*
+        path: build/fusco-${{ matrix.os }}*
