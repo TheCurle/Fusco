@@ -44,6 +44,10 @@ jobs:
       shell: bash
       run: mv build/fusco build/fusco-${{ matrix.os }}
       
+    - name: List files in ./ and build/
+      shell: bash
+      run: ls . && ls build
+      
     - name: Upload a Build Artifact
       uses: actions/upload-artifact@v2.3.1
       with:
