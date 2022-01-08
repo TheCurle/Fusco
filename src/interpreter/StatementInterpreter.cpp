@@ -63,7 +63,14 @@ void Interpreter::visitFunc(FuncStatement &stmt) {
 
 void Interpreter::visitClass(ClassStatement &stmt) {
     Environment->define(stmt.name, Object::Null);
-    shared_ptr<FClass> fclass = std::make_shared<FClass>(stmt.name.Lexeme);
+
+    std::map<std::string, shared_ptr<Function>> methods;
+    for (shared_ptr<FuncStatement> func : stmt.functions) {
+        shared_ptr<Function> method = std::make_shared<Function>(func, Environment);
+        methods.emplace(func->Name.Lexeme, method);
+    }
+
+    shared_ptr<FClass> fclass = std::make_shared<FClass>(stmt.name.Lexeme, methods);
     Environment->assign(stmt.name, Object::NewClassDefinition(fclass));
 }
 

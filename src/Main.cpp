@@ -17,28 +17,23 @@ static shared_ptr<Interpreter> Engine = std::make_shared<Interpreter>(Context);
 Object Object::Null;
 
 void lex(std::string text) {
-    try {
-        Lexer tokenStream(text);
-        auto tokens = tokenStream.ConsumeAllAndReturn();
+    Lexer tokenStream(text);
+    auto tokens = tokenStream.ConsumeAllAndReturn();
 
-        Parser parser(tokens);
-        std::vector<shared_ptr<Statement>> statements = parser.parse();
+    Parser parser(tokens);
+    std::vector<shared_ptr<Statement>> statements = parser.parse();
 
-        if(ErrorState) return;
+    if (ErrorState) return;
 
-        std::shared_ptr<TreePrinter> printer = std::make_shared<TreePrinter>();
-        printer->print(statements);
+    std::shared_ptr<TreePrinter> printer = std::make_shared<TreePrinter>();
+    printer->print(statements);
 
-        std::shared_ptr<Resolver> resolver = std::make_shared<Resolver>(Engine);
-        resolver->resolveAll(statements);
+    std::shared_ptr<Resolver> resolver = std::make_shared<Resolver>(Engine);
+    resolver->resolveAll(statements);
 
-        if(ErrorState) return;
-        
-        Engine->Interpret(statements);
+    if (ErrorState) return;
 
-    } catch (std::exception& e) {
-        std::cout << "EXCEPT: " << e.what() << std::endl;
-    }
+    Engine->Interpret(statements);
 }
 
 int main(int argc, char** argv) {

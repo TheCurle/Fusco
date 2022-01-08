@@ -21,36 +21,36 @@ Object Interpreter::visitBinaryExpression(BinaryExpression<Object> &expr) {
     switch(expr.operatorToken.Type) {
         case AR_MINUS:
             //CheckOperands(expr->operatorToken, left, right);
-            return Object::NewNum(left.Num - right.Num);
+            return Object::NewNum(left.NumData - right.NumData);
         case AR_RSLASH:
             //CheckOperands(expr->operatorToken, left, right);
-            return Object::NewNum(left.Num / right.Num);
+            return Object::NewNum(left.NumData / right.NumData);
         case AR_ASTERISK:
             //CheckOperands(expr->operatorToken, left, right);
-            return Object::NewNum(left.Num * right.Num);
+            return Object::NewNum(left.NumData * right.NumData);
         case AR_PLUS:
             CheckOperands(expr.operatorToken, left, right);
             if(left.Type == Object::NumType && right.Type == Object::NumType)
-                return Object::NewNum(left.Num + right.Num);
+                return Object::NewNum(left.NumData + right.NumData);
 
             if(left.Type == Object::StrType && right.Type == Object::StrType)
-                return Object::NewStr(left.Str.append(right.Str));
+                return Object::NewStr(left.StrData.append(right.StrData));
 
             if(left.Type == Object::StrType || right.Type == Object::StrType)
                 return Object::NewStr(left.ToString().append(right.ToString()));
             break;
         case CMP_GREATER:
             //CheckOperands(expr->operatorToken, left, right);
-            return Object::NewBool(left.Num > right.Num);
+            return Object::NewBool(left.NumData > right.NumData);
         case CMP_GREAT_EQUAL:
             //CheckOperands(expr->operatorToken, left, right);
-            return Object::NewBool(left.Num >= right.Num);
+            return Object::NewBool(left.NumData >= right.NumData);
         case CMP_LESS:
             //CheckOperands(expr->operatorToken, left, right);
-            return Object::NewBool(left.Num < right.Num);
+            return Object::NewBool(left.NumData < right.NumData);
         case CMP_LESS_EQUAL:
             //CheckOperands(expr->operatorToken, left, right);
-            return Object::NewBool(left.Num <= right.Num);
+            return Object::NewBool(left.NumData <= right.NumData);
 
         case CMP_EQUAL:
             //CheckOperands(expr->operatorToken, left, right);
@@ -90,7 +90,7 @@ Object Interpreter::visitUnaryExpression(UnaryExpression<Object> &expr) {
     Object right = Evaluate(expr.right);
 
     switch(expr.operatorToken.Type) {
-        case AR_MINUS: return Object::NewNum(-(right.Num));
+        case AR_MINUS: return Object::NewNum(-(right.NumData));
         case BOOL_EXCLAIM: return Object::NewBool(!Truthy(right));
     }
 
@@ -106,12 +106,12 @@ Object Interpreter::visitCallExpression(CallExpression<Object> &expr) {
 
     Object functionHolder = Evaluate(expr.Callee);
 
-    if(functionHolder.Type != Object::FunctionType && functionHolder.Type != Object::ClassType) {
+    if(functionHolder.Type != Object::CallableType && functionHolder.Type != Object::ClassType) {
         throw Error(RuntimeError(expr.Parenthesis, "Unable to call non-function type."));
     }
 
     // If we're trying to execute a function, use the function. Otherwise, we're calling a constructor, so use the containing class.
-    shared_ptr<Callable> function = functionHolder.Type == Object::FunctionType ? functionHolder.Function : functionHolder.ClassDefinition;
+    shared_ptr<Callable> function = functionHolder.Type == Object::CallableType ? functionHolder.CallableData : functionHolder.ClassData;
 
     if(arguments.size() != function->arguments()) {
         std::string message("Expected ");
@@ -139,7 +139,7 @@ Object Interpreter::visitLogicalExpression(LogicalExpression<Object> &expr) {
 Object Interpreter::visitGetExpression(GetExpression<Object> &expr) {
     Object obj = Evaluate(expr.Obj);
     if(obj.Type == Object::ObjectTypes::InstanceType)
-        return obj.InstanceOf->get(expr.Name);
+        return obj.InstanceData->get(expr.Name);
 
     throw Error(RuntimeError(expr.Name, "Unable to retrieve a property of a non-instance type."));
 }
@@ -150,7 +150,7 @@ Object Interpreter::visitSetExpression(SetExpression<Object> &expr) {
         throw Error(RuntimeError(expr.Name, "Unable to retrieve a property of a non-instance type."));
 
     Object value = Evaluate(expr.Value);
-    obj.InstanceOf->set(expr.Name, value);
+    obj.InstanceData->set(expr.Name, value);
     return value;
 }
 
@@ -164,7 +164,7 @@ std::string Interpreter::Stringify(Object obj) {
 
 bool Interpreter::Truthy(Object obj) {
     if(obj.Type == Object::NullType) return false;
-    if(obj.Type == Object::BoolType) return obj.Bool;
+    if(obj.Type == Object::BoolType) return obj.BoolData;
 
     return true;
 }
@@ -181,11 +181,11 @@ bool Interpreter::IsEqual(Object a, Object b) {
     if(a.Type == b.Type) {
         switch(a.Type) {
             case Object::BoolType:
-                return a.Bool == b.Bool;
+                return a.BoolData == b.BoolData;
             case Object::NumType:
-                return a.Num == b.Num;
+                return a.NumData == b.NumData;
             case Object::StrType:
-                return a.Str.compare(b.Str) == 0;
+                return a.StrData.compare(b.StrData) == 0;
             default:
                 return false;
         }

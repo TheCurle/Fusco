@@ -6,16 +6,18 @@
 #include <lexer/Lex.hpp>
 #include <Parse.hpp>
 #include <ast/Expression.hpp>
+#include <interpreter/Interpreter.hpp>
 
 std::string Object::ToString() {
     switch(Type) {
-        case StrType: return Str;
-        case BoolType: return Bool ? "true" : "false";
+        case StrType: return StrData;
+        case BoolType: return BoolData ? "true" : "false";
         case NullType: return "null";
-        case ClassType: return ClassDefinition->Name;
-        case InstanceType: return "Instance of " + InstanceOf->fclass->Name;
-        case NumType: return std::to_string(Num);
-        case FunctionType: return "func";
+        case ClassType: return ClassData->Name;
+        case InstanceType: return "Instance of " + InstanceData->fclass->Name;
+        case NumType: return std::to_string(NumData);
+        case CallableType: return "callable";
+        case MethodType: return "method " + FunctionData->Declaration->Name.Lexeme; 
     }
     return "unknown";
 }
@@ -23,42 +25,49 @@ std::string Object::ToString() {
 Object Object::NewStr(std::string str) {
     Object x;
     x.Type = StrType;
-    x.Str = str;
+    x.StrData = str;
     return x;
 }
 
 Object Object::NewNum(double num) {
     Object x;
     x.Type = NumType;
-    x.Num = num;
+    x.NumData = num;
     return x;
 }
 
 Object Object::NewBool(bool boolean) {
     Object x;
     x.Type = BoolType;
-    x.Bool = boolean;
+    x.BoolData = boolean;
     return x;
 }
 
-Object Object::NewCallable(shared_ptr<Callable> function) {
+Object Object::NewCallable(shared_ptr<Callable> callable) {
     Object x;
-    x.Type = FunctionType;
-    x.Function = function;
+    x.Type = CallableType;
+    x.CallableData = callable;
+    return x;
+}
+
+Object Object::NewFunction(shared_ptr<Function> method) {
+    Object x;
+    x.Type = MethodType;
+    x.FunctionData = method;
     return x;
 }
 
 Object Object::NewClassDefinition(shared_ptr<FClass> fclass) {
     Object x;
     x.Type = ClassType;
-    x.ClassDefinition = fclass;
+    x.ClassData = fclass;
     return x;
 }
 
 Object Object::NewInstance(shared_ptr<FClass> fclass) {
     Object x;
     x.Type = InstanceType;
-    x.InstanceOf = std::make_shared<Instance>(fclass);
+    x.InstanceData = std::make_shared<Instance>(fclass);
     return x;
 }
 

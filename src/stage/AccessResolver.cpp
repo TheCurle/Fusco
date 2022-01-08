@@ -96,6 +96,11 @@ void Resolver::visitFunc(FuncStatement &stmt) {
 void Resolver::visitClass(ClassStatement &stmt) {
     declare(stmt.name);
     define(stmt.name);
+
+    for (shared_ptr<FuncStatement> func : stmt.functions) {
+        FunctionType decl = FunctionType::MEMBER;
+        resolveFunction(*func.get(), decl);
+    }
 }
 
 void Resolver::resolveFunction(FuncStatement &stmt, FunctionType type) {
