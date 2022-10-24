@@ -7,6 +7,7 @@
 #include <string>
 #include <memory>
 #include <map>
+#include <utility>
 #include <vector>
 
 #define UNUSED(x) (void)(x)
@@ -14,7 +15,6 @@
 using std::shared_ptr;
 
 class Callable;
-class Function;
 class Interpreter;
 class FuncStatement;
 class FClass;
@@ -25,9 +25,11 @@ class Object {
 public:
     Object() {
         Null.Type = NullType;
+        NumData = 0;
+        BoolData = false;
     }
 
-    bool isNull() {
+    [[nodiscard]] bool isNull() const {
         return this->Type == NullType;
         // TODO: respect contained data
     }
@@ -49,7 +51,7 @@ public:
     double NumData;
     bool BoolData;
     shared_ptr<Callable> CallableData;
-    shared_ptr<Function> FunctionData;
+    shared_ptr<Callable> FunctionData;
     shared_ptr<FClass> ClassData;
     shared_ptr<Instance> InstanceData;
 
@@ -61,7 +63,7 @@ public:
     static Object NewCallable(shared_ptr<Callable> callable);
     static Object NewFunction(shared_ptr<Function> method);
     static Object NewClassDefinition(shared_ptr<FClass> fclass);
-    static Object NewInstance(shared_ptr<FClass> classToInstantiate);
+    static Object NewInstance(const shared_ptr<FClass>& classToInstantiate);
     static Object Null;
 };
 
@@ -78,9 +80,9 @@ public:
     std::string Message;
 
     RuntimeError(struct Token cause, std::string message) :
-        Cause(cause), Message(message) {}
+        Cause(std::move(cause)), Message(std::move(message)) {}
 
-    virtual const char* Why() const throw() {
+    virtual const char* Why() const noexcept {
         return Message.c_str();
     }
 };
@@ -89,7 +91,7 @@ class Return : public std::exception {
 public:
     Object Value;
 
-    Return(Object value) : Value(value) {}
+    explicit Return(Object value) : Value(std::move(value)) {}
 };
 
 enum FunctionType {
@@ -107,17 +109,17 @@ public:
 
 class FClass : public Callable, public std::enable_shared_from_this<FClass> {
     public:
-    FClass(std::string pName, std::map<std::string, shared_ptr<Function>> pMethods) : Name(pName), Methods(pMethods) {}
-    ~FClass() {}
+    FClass(std::string pName, std::map<std::string, shared_ptr<Function>> pMethods) : Name(std::move(pName)), Methods(std::move(pMethods)) {}
+    ~FClass() override = default;
 
-    size_t arguments() { return 0; }
-    Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params) {
+    size_t arguments() override { return 0; }
+    Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params) override {
         UNUSED(interpreter);
         UNUSED(params);
         return Object::NewInstance(shared_from_this());
     }
 
-    Object findMethod(std::string name) {
+    Object findMethod(const std::string& name) {
         if (Methods.find(name) != Methods.end()) 
             return Object::NewFunction(Methods.at(name));
         
@@ -130,16 +132,16 @@ class FClass : public Callable, public std::enable_shared_from_this<FClass> {
 
 class Instance {
     public:
-    Instance(shared_ptr<FClass> classToInstantiate) : fclass(classToInstantiate) {
+    explicit Instance(shared_ptr<FClass> classToInstantiate) : fclass(std::move(classToInstantiate)) {
         fields = std::map<std::string, Object>();
     }
 
-    Object get(Token name) {
+    Object get(const Token& name) {
         if (fields.find(name.Lexeme) != fields.end())
             return fields.at(name.Lexeme);
 
         Object method = fclass->findMethod(name.Lexeme);
-        if (method.isNull()) return method;
+        if (!method.isNull()) return method;
         
         throw RuntimeError(name, "No such property " + name.Lexeme);
     }

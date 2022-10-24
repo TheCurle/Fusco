@@ -7,6 +7,7 @@
 #include <ast/Expression.hpp>
 #include <interpreter/Interpreter.hpp>
 #include <lexer/Lex.hpp>
+#include <utility>
 
 bool ErrorState = false;
 
@@ -17,7 +18,7 @@ static shared_ptr<Interpreter> Engine = std::make_shared<Interpreter>(Context);
 Object Object::Null;
 
 void lex(std::string text) {
-    Lexer tokenStream(text);
+    Lexer tokenStream(std::move(text));
     auto tokens = tokenStream.ConsumeAllAndReturn();
 
     Parser parser(tokens);
@@ -44,11 +45,11 @@ int main(int argc, char** argv) {
 
     if (argc < 2) {
         // Emulate a REPL (Read, Evaluate, Print, Loop)
-        std::cout << "$ ";
+        printf("$ ");
         for (std::string line; std::getline(std::cin, line);) {
             ErrorState = false;
             lex(line);
-            std::cout << "$ ";
+            printf("$ ");
         }
     } else {
         // Read and run the given file.

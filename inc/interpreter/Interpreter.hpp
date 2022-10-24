@@ -11,6 +11,7 @@
 #include <string>
 #include <ast/Statement.hpp>
 #include <interpreter/Globals.hpp>
+#include <utility>
 
 using std::shared_ptr;
 
@@ -21,12 +22,12 @@ class ExecutionContext : Common, public std::enable_shared_from_this<ExecutionCo
         Enclosing = nullptr;
     }
 
-    ExecutionContext(shared_ptr<ExecutionContext> inner) {
-        Enclosing = inner;
+    explicit ExecutionContext(shared_ptr<ExecutionContext> inner) {
+        Enclosing = std::move(inner);
     }
 
-    Object get(struct Token name) {
-        std::map<std::string, Object>::iterator it = ObjectMap.find(name.Lexeme);
+    Object get(const struct Token& name) {
+        auto it = ObjectMap.find(name.Lexeme);
         if(it != ObjectMap.end()) // If variable not in current context, search deeper
             return ObjectMap.at(name.Lexeme);
 
@@ -36,12 +37,12 @@ class ExecutionContext : Common, public std::enable_shared_from_this<ExecutionCo
         throw Error(RuntimeError(name, std::string("Unable to find variable ").append(name.Lexeme)));
     }
 
-    Object getAt(int depth, std::string name) {
+    Object getAt(int depth, const std::string& name) {
         return walk(depth)->ObjectMap.at(name);
     }
 
-    void assignAt(int depth, Token name, Object value) {
-        walk(depth)->ObjectMap.at(name.Lexeme) = value;
+    void assignAt(int depth, const Token& name, Object value) {
+        walk(depth)->ObjectMap.at(name.Lexeme) = std::move(value);
     }
 
     shared_ptr<ExecutionContext> walk(int depth) {
@@ -52,7 +53,7 @@ class ExecutionContext : Common, public std::enable_shared_from_this<ExecutionCo
     }
 
     void define(struct Token name, Object obj) {
-        std::map<std::string, Object>::iterator it =
+        auto it =
             ObjectMap.find(name.Lexeme);
 
         if (it != ObjectMap.end())
@@ -61,8 +62,8 @@ class ExecutionContext : Common, public std::enable_shared_from_this<ExecutionCo
         ObjectMap.emplace(name.Lexeme, obj);
     }
 
-    void assign(Token name, Object value) {
-        std::map<std::string, Object>::iterator it = ObjectMap.find(name.Lexeme);
+    void assign(const Token& name, const Object& value) {
+        auto it = ObjectMap.find(name.Lexeme);
         if(it != ObjectMap.end()) { // If variable not in current context, search deeper
             it->second = value;
         }
@@ -82,10 +83,10 @@ class Interpreter : public ExpressionVisitor<Object>,
                     public Common,
                     public std::enable_shared_from_this<Interpreter> {
 public:
-    ~Interpreter() {}
+    ~Interpreter() override = default;
 
-    Interpreter(shared_ptr<ExecutionContext> spark) {
-        Globals = spark;
+    explicit Interpreter(shared_ptr<ExecutionContext> spark) {
+        Globals = std::move(spark);
         Token getTimeName;
         getTimeName.Lexeme = "getTime";
         Globals->define(getTimeName, Object::NewCallable(std::make_shared<GetTime>()));
@@ -97,9 +98,9 @@ public:
 
     void resolve(Expression<Object>* expr, int depth);
 
-    void Interpret(std::vector<shared_ptr<Statement>> expr);
+    void Interpret(const std::vector<shared_ptr<Statement>>& expr);
 
-    void ExecuteBlock(std::vector<shared_ptr<Statement>> statements, shared_ptr<ExecutionContext> environment);
+    void ExecuteBlock(const std::vector<shared_ptr<Statement>>& statements, shared_ptr<ExecutionContext> environment);
 
     Object dummy() override { return Object::Null; }
 
@@ -148,17 +149,17 @@ private:
 
     std::map<Expression<Object>*, int> Locals;
 
-    void Execute(shared_ptr<Statement> stmt);
+    void Execute(const shared_ptr<Statement>& stmt);
 
-    Object Evaluate(shared_ptr<Expression<Object>> expr);
+    Object Evaluate(const shared_ptr<Expression<Object>>& expr);
 
     std::string Stringify(Object obj);
 
-    bool Truthy(Object obj);
-    bool IsEqual(Object a, Object b);
+    bool Truthy(const Object& obj);
+    bool IsEqual(const Object& a, const Object& b);
 
-    void CheckOperand(struct Token operatorToken, Object operand);
-    void CheckOperands(struct Token operatorToken, Object left, Object right);
+    void CheckOperand(struct Token operatorToken, const Object& operand);
+    void CheckOperands(const struct Token& operatorToken, const Object& left, const Object& right);
 
     Object lookupVariable(Token name, Expression<Object>* expr);
 
@@ -169,13 +170,13 @@ class Resolver : public ExpressionVisitor<Object>,
                  public Common,
                  public std::enable_shared_from_this<Resolver> {
 public:
-    Resolver(std::shared_ptr<Interpreter> interp) { 
+    explicit Resolver(std::shared_ptr<Interpreter> interp) {
         scopes = std::vector<std::map<std::string, bool>>();
-        interpreter = interp;
+        interpreter = std::move(interp);
         currentFunction = FunctionType::NONE;
     }
 
-    ~Resolver() {}
+    ~Resolver() override = default;
 
     Object dummy() override { return Object::Null; }
 
@@ -242,11 +243,11 @@ class TreePrinter : public ExpressionVisitor<Object>,
                     public StatementVisitor,
                     public std::enable_shared_from_this<TreePrinter> {
 public:
-    ~TreePrinter() {}
+    ~TreePrinter() override = default;
 
     Object dummy() override { return Object::Null; }
 
-    Object print(std::vector<shared_ptr<Statement>> stmt);
+    Object print(const std::vector<shared_ptr<Statement>>& stmt);
 
     void visitExpression(ExpressionStatement &stmt) override;
 
@@ -287,16 +288,16 @@ public:
     Object visitSetExpression(SetExpression<Object> &expr) override;
 private:
     template <class ... Args>
-    std::string parenthesize(std::string Header, Args ... args);
+    std::string parenthesize(const std::string& Header, Args ... args);
 };
 
 
 class Function : public Callable {
 public:
     Function(shared_ptr<FuncStatement> pDeclaration, shared_ptr<ExecutionContext> pClosure)
-        : Declaration(pDeclaration), Closure(pClosure) {}
+        : Declaration(std::move(pDeclaration)), Closure(std::move(pClosure)) {}
 
-    Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params) {
+    Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params) override {
         shared_ptr<ExecutionContext> environment = std::make_shared<ExecutionContext>(Closure);
         for(size_t i = 0; i < Declaration->Params.size(); i++) {
             environment->define(Declaration->Params.at(i),
@@ -311,7 +312,7 @@ public:
         return Object::Null;
     }
 
-    size_t arguments() {
+    size_t arguments() override {
         return Declaration->Params.size();
     }
 

@@ -10,7 +10,7 @@
 
 static size_t NestLevel = 0;
 
-static std::string nest(std::string input) {
+static std::string nest(const std::string& input) {
     std::string temp;
     for(size_t i = 0; i < NestLevel; i++)
         temp.append(" ");
@@ -19,10 +19,10 @@ static std::string nest(std::string input) {
     return temp;
 }
 
-Object TreePrinter::print(std::vector<shared_ptr<Statement>> stmts) {
+Object TreePrinter::print(const std::vector<shared_ptr<Statement>>& stmts) {
     std::shared_ptr<TreePrinter> shared = shared_from_this();
     
-    for(auto stmt : stmts) {
+    for(const auto& stmt : stmts) {
         stmt->accept(shared);
     }
 
@@ -66,12 +66,12 @@ void TreePrinter::visitWhile(WhileStatement &stmt) {
 void TreePrinter::visitFunc(FuncStatement &stmt) {
     std::cout << std::string("Function ").append(stmt.Name.Lexeme) << std::endl;
     std::cout << "\tParameters: ";
-    for(Token param : stmt.Params)
+    for(const Token& param : stmt.Params)
         std::cout << std::string(" ").append(param.Lexeme);
 
     std::cout << std::endl << "\tBody:" << std::endl;
 
-    for(shared_ptr<Statement> statement : stmt.Body) {
+    for(const shared_ptr<Statement>& statement : stmt.Body) {
         std::cout << nest("-> ");
         statement->accept(shared_from_this());
     }
@@ -81,7 +81,7 @@ void TreePrinter::visitFunc(FuncStatement &stmt) {
 void TreePrinter::visitClass(ClassStatement &stmt) {
     std::cout << std::string("Class ").append(stmt.name.Lexeme) << std::endl;
     std::cout << "\tMethods: ";
-    for(std::shared_ptr<FuncStatement> method : stmt.functions) {
+    for(const std::shared_ptr<FuncStatement>& method : stmt.functions) {
         std::cout << nest("-> ");
         method->accept(shared_from_this());
     }
@@ -96,7 +96,7 @@ void TreePrinter::visitBlock(BlockStatement &stmt) {
     std::cout << nest("Block starts:") << std::endl;
 
     NestLevel++;
-    for(shared_ptr<Statement> inner : stmt.Statements) {
+    for(const shared_ptr<Statement>& inner : stmt.Statements) {
         std::cout << nest("-> ");
         inner->accept(shared_from_this());
     }
@@ -133,7 +133,7 @@ Object TreePrinter::visitUnaryExpression(UnaryExpression<Object> &expr) {
 
 Object TreePrinter::visitCallExpression(CallExpression<Object> &expr) {
     EXPR firstArg = nullptr;
-    if(expr.Arguments.size() > 0)
+    if(!expr.Arguments.empty())
         firstArg = expr.Arguments.at(0);
 
     if(firstArg != nullptr)
@@ -155,7 +155,7 @@ Object TreePrinter::visitSetExpression(SetExpression<Object> &expr) {
 }
 
 template <class... Args>
-std::string TreePrinter::parenthesize(std::string Header, Args... args) {
+std::string TreePrinter::parenthesize(const std::string& Header, Args... args) {
     std::string builder("(");
     builder.append(Header);
 
@@ -163,7 +163,7 @@ std::string TreePrinter::parenthesize(std::string Header, Args... args) {
 
     (vec.push_back(*args), ...);
 
-    for(auto value: vec) {
+    for(const auto& value: vec) {
         if(value != nullptr)
             builder.append(" ").append(value->accept(shared_from_this()).ToString());
     }

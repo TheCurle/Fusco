@@ -4,6 +4,7 @@
  ***********/
 
 #include <interpreter/Interpreter.hpp>
+#include <utility>
 
 Object Interpreter::lookupVariable(Token name, Expression<Object>* expr) {
     if (Locals.find(expr) != Locals.end())
@@ -106,12 +107,12 @@ Object Interpreter::visitCallExpression(CallExpression<Object> &expr) {
 
     Object functionHolder = Evaluate(expr.Callee);
 
-    if(functionHolder.Type != Object::CallableType && functionHolder.Type != Object::ClassType) {
+    if(functionHolder.Type != Object::CallableType && functionHolder.Type != Object::ClassType && functionHolder.Type != Object::MethodType) {
         throw Error(RuntimeError(expr.Parenthesis, "Unable to call non-function type."));
     }
 
     // If we're trying to execute a function, use the function. Otherwise, we're calling a constructor, so use the containing class.
-    shared_ptr<Callable> function = functionHolder.Type == Object::CallableType ? functionHolder.CallableData : functionHolder.ClassData;
+    shared_ptr<Callable> function = functionHolder.Type == Object::CallableType ? functionHolder.CallableData : functionHolder.Type == Object::MethodType ? functionHolder.FunctionData : functionHolder.ClassData;
 
     if(arguments.size() != function->arguments()) {
         std::string message("Expected ");
@@ -146,7 +147,7 @@ Object Interpreter::visitGetExpression(GetExpression<Object> &expr) {
 
 Object Interpreter::visitSetExpression(SetExpression<Object> &expr) {
     Object obj = Evaluate(expr.Obj);
-    if(!(obj.Type == Object::ObjectTypes::InstanceType))
+    if (obj.Type != Object::ObjectTypes::InstanceType)
         throw Error(RuntimeError(expr.Name, "Unable to retrieve a property of a non-instance type."));
 
     Object value = Evaluate(expr.Value);
@@ -154,7 +155,7 @@ Object Interpreter::visitSetExpression(SetExpression<Object> &expr) {
     return value;
 }
 
-Object Interpreter::Evaluate(shared_ptr<Expression<Object>> expr) {
+Object Interpreter::Evaluate(const shared_ptr<Expression<Object>>& expr) {
     return expr->accept(shared_from_this());
 }
 
@@ -162,14 +163,14 @@ std::string Interpreter::Stringify(Object obj) {
     return obj.ToString();
 }
 
-bool Interpreter::Truthy(Object obj) {
+bool Interpreter::Truthy(const Object& obj) {
     if(obj.Type == Object::NullType) return false;
     if(obj.Type == Object::BoolType) return obj.BoolData;
 
     return true;
 }
 
-bool Interpreter::IsEqual(Object a, Object b) {
+bool Interpreter::IsEqual(const Object& a, const Object& b) {
     // If both are null, they are equal
     if(a.Type == Object::NullType && b.Type == Object::NullType)
         return true;
@@ -185,7 +186,7 @@ bool Interpreter::IsEqual(Object a, Object b) {
             case Object::NumType:
                 return a.NumData == b.NumData;
             case Object::StrType:
-                return a.StrData.compare(b.StrData) == 0;
+                return a.StrData == b.StrData;
             default:
                 return false;
         }
@@ -193,20 +194,19 @@ bool Interpreter::IsEqual(Object a, Object b) {
         return false;
 }
 
-void Interpreter::CheckOperand(struct Token operatorToken, Object operand) {
+void Interpreter::CheckOperand(struct Token operatorToken, const Object& operand) {
     if(operand.Type == Object::NumType) return;
 
-    throw Error(RuntimeError(operatorToken, "This operation can only be performed on a Number."));
+    throw Error(RuntimeError(std::move(operatorToken), "This operation can only be performed on a Number."));
 }
 
-void Interpreter::CheckOperands(struct Token operatorToken, Object left, Object right) {
+void Interpreter::CheckOperands(const struct Token& operatorToken, const Object& left, const Object& right) {
     switch(operatorToken.Type) {
         case AR_PLUS:
             if((left.Type == right.Type && ((left.Type == Object::NumType) || (left.Type == Object::StrType)))
                     || (left.Type == Object::StrType || right.Type == Object::StrType))
                 return;
             throw Error(RuntimeError(operatorToken, "Only strings and numbers may be added to each other."));
-            break;
     }
 
     throw Error(RuntimeError(operatorToken, "Unknown syntax error."));

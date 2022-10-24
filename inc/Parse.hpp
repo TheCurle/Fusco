@@ -8,11 +8,12 @@
 #include <ast/Statement.hpp>
 #include <Main.hpp>
 #include <stdexcept>
+#include <utility>
 
 class Parser : public Common {
 public:
-    Parser(std::vector<struct Token> pTokens)
-        : tokens(pTokens), currentToken(0) {}
+    explicit Parser(std::vector<struct Token> pTokens)
+        : tokens(std::move(pTokens)), currentToken(0) {}
 
     std::vector<shared_ptr<Statement>> parse();
 

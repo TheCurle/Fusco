@@ -7,6 +7,7 @@
 #include <Parse.hpp>
 #include <ast/Expression.hpp>
 #include <interpreter/Interpreter.hpp>
+#include <utility>
 
 std::string Object::ToString() {
     switch(Type) {
@@ -17,7 +18,7 @@ std::string Object::ToString() {
         case InstanceType: return "Instance of " + InstanceData->fclass->Name;
         case NumType: return std::to_string(NumData);
         case CallableType: return "callable";
-        case MethodType: return "method " + FunctionData->Declaration->Name.Lexeme; 
+        case MethodType: return "method " + std::reinterpret_pointer_cast<std::shared_ptr<Function>>(FunctionData)->get()->Declaration->Name.Lexeme;
     }
     return "unknown";
 }
@@ -25,7 +26,7 @@ std::string Object::ToString() {
 Object Object::NewStr(std::string str) {
     Object x;
     x.Type = StrType;
-    x.StrData = str;
+    x.StrData = std::move(str);
     return x;
 }
 
@@ -46,29 +47,29 @@ Object Object::NewBool(bool boolean) {
 Object Object::NewCallable(shared_ptr<Callable> callable) {
     Object x;
     x.Type = CallableType;
-    x.CallableData = callable;
+    x.CallableData = std::move(callable);
     return x;
 }
 
 Object Object::NewFunction(shared_ptr<Function> method) {
     Object x;
     x.Type = MethodType;
-    x.FunctionData = method;
+    x.FunctionData = std::move(method);
     return x;
 }
 
 Object Object::NewClassDefinition(shared_ptr<FClass> fclass) {
     Object x;
     x.Type = ClassType;
-    x.ClassData = fclass;
+    x.ClassData = std::move(fclass);
     return x;
 }
 
-Object Object::NewInstance(shared_ptr<FClass> fclass) {
+Object Object::NewInstance(const shared_ptr<FClass>& fclass) {
     Object x;
     x.Type = InstanceType;
     x.InstanceData = std::make_shared<Instance>(fclass);
     return x;
 }
 
-Callable::~Callable() {}
+Callable::~Callable() = default;

@@ -209,8 +209,8 @@ EXPR Parser::assignment() {
         Token equals = previous();
         EXPR value = assignment();
 
-        if(auto get = dynamic_cast<VariableExpression<Object>*>(expr.get()); get != nullptr) {
-            Token name = get->Name;
+        if(auto var = dynamic_cast<VariableExpression<Object>*>(expr.get()); var != nullptr) {
+            Token name = var->Name;
             return std::make_shared<AssignmentExpression<Object>>(name, value);
         } else if(auto get = dynamic_cast<GetExpression<Object>*>(expr.get()); get != nullptr) {
             return std::make_shared<SetExpression<Object>>(get->Obj, get->Name, value);

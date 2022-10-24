@@ -5,14 +5,15 @@
 
 #include <iostream>
 #include <interpreter/Interpreter.hpp>
+#include <utility>
 
 void Interpreter::resolve(Expression<Object>* expr, int depth) {
     Locals.at(expr) = depth;
 }
 
-void Interpreter::Interpret(std::vector<shared_ptr<Statement>> statements) {
+void Interpreter::Interpret(const std::vector<shared_ptr<Statement>>& statements) {
     try {
-        for(auto value: statements) {
+        for(const auto& value: statements) {
             Execute(value);
         }
     } catch (RuntimeError &e) {
@@ -20,7 +21,7 @@ void Interpreter::Interpret(std::vector<shared_ptr<Statement>> statements) {
     }
 }
 
-void Interpreter::Execute(shared_ptr<Statement> stmt) {
+void Interpreter::Execute(const shared_ptr<Statement>& stmt) {
     stmt->accept(shared_from_this());
 }
 
@@ -65,7 +66,7 @@ void Interpreter::visitClass(ClassStatement &stmt) {
     Environment->define(stmt.name, Object::Null);
 
     std::map<std::string, shared_ptr<Function>> methods;
-    for (shared_ptr<FuncStatement> func : stmt.functions) {
+    for (const shared_ptr<FuncStatement>& func : stmt.functions) {
         shared_ptr<Function> method = std::make_shared<Function>(func, Environment);
         methods.emplace(func->Name.Lexeme, method);
     }
@@ -87,18 +88,18 @@ void Interpreter::visitBlock(BlockStatement &stmt) {
     ExecuteBlock(stmt.Statements, std::make_shared<ExecutionContext>(Environment));
 }
 
-void Interpreter::ExecuteBlock(std::vector<shared_ptr<Statement>> statements, shared_ptr<ExecutionContext> environment) {
+void Interpreter::ExecuteBlock(const std::vector<shared_ptr<Statement>>& statements, shared_ptr<ExecutionContext> environment) {
     shared_ptr<ExecutionContext> previous = this->Environment;
 
-    this->Environment = environment;
+    this->Environment = std::move(environment);
 	
 	try {
-		for(shared_ptr<Statement> stmt : statements) {
+		for(const shared_ptr<Statement>& stmt : statements) {
 			Execute(stmt);
 		}
 	} catch (Return &r) {
 		this->Environment = previous; // C++ try-finally when?
-		throw r;
+		throw Return(r.Value);
 	}
 
     this->Environment = previous;

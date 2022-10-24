@@ -6,6 +6,7 @@
 #pragma once
 #include <fstream>
 #include <string>
+#include <utility>
 #include <vector>
 #include <Main.hpp>
 #include <interpreter/Types.hpp>
@@ -84,8 +85,8 @@ enum Lexeme {
 
 class Lexer : public Common {
 public:
-    Lexer(std::string Prompt) {
-        SrcText = Prompt;
+    explicit Lexer(std::string Prompt) {
+        SrcText = std::move(Prompt);
         Line = Overread = SrcOffset = 0;
     }
 
@@ -122,7 +123,7 @@ private:
 
     // Character reading & decoding
     void ReturnCharToStream(int Char);
-    int NextChar(void);
+    int NextChar();
     int FindChar();
     int FindDigitFromPos(std::string String, char Char);
 
@@ -140,7 +141,7 @@ private:
      * Print the given message in an error, to the user.
      * ! TODO: Refactor this to use pretty printing; display the erroring line, and the location of the error.
      */
-    void Error(std::string Message) {
+    void Error(const std::string& Message) {
         Common::Error(Line, Message);
     }
 };

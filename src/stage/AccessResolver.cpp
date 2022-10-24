@@ -25,7 +25,7 @@ void Resolver::beginScope() {
 }
 
 void Resolver::endScope() {
-    scopes.back();
+    (void) scopes.pop_back();
 }
 
 void Resolver::declare(Token name) {

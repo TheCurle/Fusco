@@ -4,6 +4,7 @@
  ***********/
 #pragma once
 #include <lexer/Lex.hpp>
+#include <utility>
 
 template <typename T>
 class BinaryExpression;
@@ -39,8 +40,8 @@ class SetExpression;
 template <typename T>
 class ExpressionVisitor {
 public:
-    ExpressionVisitor() {}
-    virtual ~ExpressionVisitor() {};
+    ExpressionVisitor() = default;
+    virtual ~ExpressionVisitor() = default;
     virtual T dummy() = 0;
     virtual T visitBinaryExpression(BinaryExpression<T> &expr) = 0;
     virtual T visitGroupingExpression(GroupingExpression<T> &expr) = 0;
@@ -57,7 +58,7 @@ public:
 template <typename T>
 class Expression : std::enable_shared_from_this<Expression<T>> {
 public:
-    Expression() {}
+    Expression() = default;
     Expression(const Expression&) = delete;
     Expression& operator=(const Expression&) = delete;
     virtual ~Expression() = default;
@@ -70,7 +71,7 @@ template <typename T>
 class BinaryExpression : public Expression<T> {
 public:
     explicit BinaryExpression(shared_ptr<Expression<T>> pLeft, Token pOperator, shared_ptr<Expression<T>> pRight)
-        : left(pLeft), right(pRight), operatorToken(pOperator) {}
+        : left(pLeft), right(pRight), operatorToken(std::move(pOperator)) {}
 
     T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
         return visitor->visitBinaryExpression(*this);
@@ -110,7 +111,7 @@ template <typename T>
 class UnaryExpression : public Expression<T> {
 public:
     explicit UnaryExpression(Token pOperator, shared_ptr<Expression<T>> pRight)
-        : operatorToken(pOperator), right(pRight) {}
+        : operatorToken(std::move(pOperator)), right(pRight) {}
 
     T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
         return visitor->visitUnaryExpression(*this);
@@ -123,7 +124,7 @@ public:
 template <typename T>
 class VariableExpression : public Expression<T> {
 public:
-    explicit VariableExpression(Token name) : Name(name) {}
+    explicit VariableExpression(Token name) : Name(std::move(name)) {}
 
     T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
         return visitor->visitVariableExpression(*this);
@@ -136,7 +137,7 @@ template <typename T>
 class AssignmentExpression : public Expression<T> {
 public:
     explicit AssignmentExpression(Token name, shared_ptr<Expression<T>> expr) :
-        Name(name), Expr(expr) {}
+        Name(std::move(name)), Expr(expr) {}
 
     T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
         return visitor->visitAssignmentExpression(*this);
@@ -150,7 +151,7 @@ template <typename T>
 class LogicalExpression : public Expression<T> {
 public:
     explicit LogicalExpression(shared_ptr<Expression<T>> pLeft, Token pOperator, shared_ptr<Expression<T>> pRight)
-         : Left(pLeft), operatorToken(pOperator), Right(pRight) {}
+         : Left(pLeft), operatorToken(std::move(pOperator)), Right(pRight) {}
 
     T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
         return visitor->visitLogicalExpression(*this);
@@ -165,7 +166,7 @@ template <typename T>
 class CallExpression : public Expression<T> {
 public:
     explicit CallExpression(shared_ptr<Expression<T>> pCallee, Token pParenthesis, std::vector<shared_ptr<Expression<T>>> pArguments)
-        : Callee(pCallee), Parenthesis(pParenthesis), Arguments(pArguments) {}
+        : Callee(pCallee), Parenthesis(std::move(pParenthesis)), Arguments(pArguments) {}
 
     T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
         return visitor->visitCallExpression(*this);
@@ -180,7 +181,7 @@ template <typename T>
 class GetExpression : public Expression<T> {
 public:
     explicit GetExpression(shared_ptr<Expression<T>> pObject, Token pName)
-       : Obj(pObject), Name(pName) {}
+       : Obj(pObject), Name(std::move(pName)) {}
 
     T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
         return visitor->visitGetExpression(*this);
@@ -194,7 +195,7 @@ template <typename T>
 class SetExpression : public Expression<T> {
 public:
     explicit SetExpression(shared_ptr<Expression<T>> pObject, Token pName, shared_ptr<Expression<T>> pValue)
-       : Obj(pObject), Name(pName), Value(pValue) {}
+       : Obj(pObject), Name(std::move(pName)), Value(pValue) {}
 
     T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
         return visitor->visitSetExpression(*this);
