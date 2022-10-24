@@ -36,6 +36,9 @@ class GetExpression;
 template <typename T>
 class SetExpression;
 
+template <typename T>
+class ThisExpression;
+
 
 template <typename T>
 class ExpressionVisitor {
@@ -53,6 +56,7 @@ public:
     virtual T visitCallExpression(CallExpression<T> &expr) = 0;
     virtual T visitGetExpression(GetExpression<T> &expr) = 0;
     virtual T visitSetExpression(SetExpression<T> &expr) = 0;
+    virtual T visitThisExpression(ThisExpression<T> &expr) = 0;
 };
 
 template <typename T>
@@ -204,4 +208,16 @@ public:
     shared_ptr<Expression<T>> Obj;
     Token Name;
     shared_ptr<Expression<T>> Value;
+};
+
+template <typename T>
+class ThisExpression : public Expression<T> {
+public:
+    explicit ThisExpression(Token keyword) : Name(std::move(keyword)) {}
+
+    T accept(shared_ptr<ExpressionVisitor<T>> visitor) override {
+        return visitor->visitThisExpression(*this);
+    }
+
+    Token Name;
 };

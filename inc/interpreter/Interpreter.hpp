@@ -143,6 +143,8 @@ public:
     Object visitGetExpression(GetExpression<Object> &expr) override;
     
     Object visitSetExpression(SetExpression<Object> &expr) override;
+
+    Object visitThisExpression(ThisExpression<Object> &expr) override;
 private:
 
     shared_ptr<ExecutionContext> Environment;
@@ -225,6 +227,9 @@ public:
     Object visitGetExpression(GetExpression<Object> &expr) override;
     
     Object visitSetExpression(SetExpression<Object> &expr) override;
+
+    Object visitThisExpression(ThisExpression<Object> &expr) override;
+
 private:
     std::vector<std::map<std::string, bool>> scopes;
     FunctionType currentFunction;
@@ -286,36 +291,9 @@ public:
     Object visitGetExpression(GetExpression<Object> &expr) override;
 
     Object visitSetExpression(SetExpression<Object> &expr) override;
+
+    Object visitThisExpression(ThisExpression<Object> &expr) override;
 private:
     template <class ... Args>
     std::string parenthesize(const std::string& Header, Args ... args);
-};
-
-
-class Function : public Callable {
-public:
-    Function(shared_ptr<FuncStatement> pDeclaration, shared_ptr<ExecutionContext> pClosure)
-        : Declaration(std::move(pDeclaration)), Closure(std::move(pClosure)) {}
-
-    Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params) override {
-        shared_ptr<ExecutionContext> environment = std::make_shared<ExecutionContext>(Closure);
-        for(size_t i = 0; i < Declaration->Params.size(); i++) {
-            environment->define(Declaration->Params.at(i),
-                params.at(i));
-        }
-
-        try {
-            interpreter->ExecuteBlock(Declaration->Body, environment);
-        } catch (Return &value) {
-            return value.Value;
-        }
-        return Object::Null;
-    }
-
-    size_t arguments() override {
-        return Declaration->Params.size();
-    }
-
-    shared_ptr<FuncStatement> Declaration;
-    shared_ptr<ExecutionContext> Closure;
 };

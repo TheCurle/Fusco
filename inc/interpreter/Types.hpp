@@ -19,7 +19,26 @@ class Interpreter;
 class FuncStatement;
 class FClass;
 class Instance;
-class Function;
+class ExecutionContext;
+class Object;
+
+class Callable {
+public:
+    virtual ~Callable() = 0;
+    virtual size_t arguments() = 0;
+    virtual Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> arguments) = 0;
+};
+
+class Function : public Callable{
+public:
+    Function(shared_ptr<FuncStatement> pDeclaration, shared_ptr<ExecutionContext> pClosure);
+    Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params);
+    size_t arguments();
+    shared_ptr<Function> bind(shared_ptr<Instance> instance);
+
+    shared_ptr<FuncStatement> Declaration;
+    shared_ptr<ExecutionContext> Closure;
+};
 
 class Object {
 public:
@@ -51,7 +70,6 @@ public:
     double NumData;
     bool BoolData;
     shared_ptr<Callable> CallableData;
-    shared_ptr<Callable> FunctionData;
     shared_ptr<FClass> ClassData;
     shared_ptr<Instance> InstanceData;
 
@@ -100,13 +118,6 @@ enum FunctionType {
     MEMBER      // A member function in a class is currently being resolved
 };
 
-class Callable {
-public:
-    virtual ~Callable() = 0;
-    virtual size_t arguments() = 0;
-    virtual Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> arguments) = 0;
-};
-
 class FClass : public Callable, public std::enable_shared_from_this<FClass> {
     public:
     FClass(std::string pName, std::map<std::string, shared_ptr<Function>> pMethods) : Name(std::move(pName)), Methods(std::move(pMethods)) {}
@@ -130,7 +141,7 @@ class FClass : public Callable, public std::enable_shared_from_this<FClass> {
     std::map<std::string, shared_ptr<Function>> Methods;
 };
 
-class Instance {
+class Instance : public std::enable_shared_from_this<Instance> {
     public:
     explicit Instance(shared_ptr<FClass> classToInstantiate) : fclass(std::move(classToInstantiate)) {
         fields = std::map<std::string, Object>();
@@ -141,7 +152,8 @@ class Instance {
             return fields.at(name.Lexeme);
 
         Object method = fclass->findMethod(name.Lexeme);
-        if (!method.isNull()) return method;
+        if (!method.isNull())
+            return Object::NewFunction(fclass->Methods.at(name.Lexeme)->bind(shared_from_this()));
         
         throw RuntimeError(name, "No such property " + name.Lexeme);
     }

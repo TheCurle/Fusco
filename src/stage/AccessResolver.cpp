@@ -97,10 +97,15 @@ void Resolver::visitClass(ClassStatement &stmt) {
     declare(stmt.name);
     define(stmt.name);
 
-    for (shared_ptr<FuncStatement> func : stmt.functions) {
+    beginScope();
+    scopes.back().emplace("this", true);
+
+    for (const shared_ptr<FuncStatement>& func : stmt.functions) {
         FunctionType decl = FunctionType::MEMBER;
-        resolveFunction(*func.get(), decl);
+        resolveFunction(*func, decl);
     }
+
+    endScope();
 }
 
 void Resolver::resolveFunction(FuncStatement &stmt, FunctionType type) {
@@ -193,3 +198,9 @@ Object Resolver::visitSetExpression(SetExpression<Object> &expr) {
     resolve(expr.Obj);
     return Object::Null;
 }
+
+Object Resolver::visitThisExpression(ThisExpression<Object> &expr) {
+    resolveLocal(&expr, expr.Name);
+    return Object::Null;
+}
+

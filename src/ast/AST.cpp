@@ -154,6 +154,11 @@ Object TreePrinter::visitSetExpression(SetExpression<Object> &expr) {
     return Object::NewStr(parenthesize("set " + expr.Name.Lexeme, &expr.Obj, &expr.Value)); 
 }
 
+Object TreePrinter::visitThisExpression(ThisExpression<Object> &expr) {
+    UNUSED(expr);
+    return Object::NewStr("bind of \"this\"");
+}
+
 template <class... Args>
 std::string TreePrinter::parenthesize(const std::string& Header, Args... args) {
     std::string builder("(");

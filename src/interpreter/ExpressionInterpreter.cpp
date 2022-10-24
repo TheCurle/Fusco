@@ -112,7 +112,7 @@ Object Interpreter::visitCallExpression(CallExpression<Object> &expr) {
     }
 
     // If we're trying to execute a function, use the function. Otherwise, we're calling a constructor, so use the containing class.
-    shared_ptr<Callable> function = functionHolder.Type == Object::CallableType ? functionHolder.CallableData : functionHolder.Type == Object::MethodType ? functionHolder.FunctionData : functionHolder.ClassData;
+    shared_ptr<Callable> function = functionHolder.Type == Object::CallableType ? functionHolder.CallableData : functionHolder.Type == Object::MethodType ? functionHolder.CallableData : functionHolder.ClassData;
 
     if(arguments.size() != function->arguments()) {
         std::string message("Expected ");
@@ -153,6 +153,10 @@ Object Interpreter::visitSetExpression(SetExpression<Object> &expr) {
     Object value = Evaluate(expr.Value);
     obj.InstanceData->set(expr.Name, value);
     return value;
+}
+
+Object Interpreter::visitThisExpression(ThisExpression<Object> &expr) {
+    return lookupVariable(expr.Name, &expr);
 }
 
 Object Interpreter::Evaluate(const shared_ptr<Expression<Object>>& expr) {

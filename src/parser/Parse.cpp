@@ -341,6 +341,7 @@ EXPR Parser::primary() {
     if(matchAny(KW_FALSE)) return std::make_shared<LiteralExpression<Object>>(Object::NewBool(false));
     if(matchAny(KW_TRUE)) return std::make_shared<LiteralExpression<Object>>(Object::NewBool(true));
     if(matchAny(KW_NULL)) return std::make_shared<LiteralExpression<Object>>(Object::Null);
+    if(matchAny(KW_THIS)) return std::make_shared<ThisExpression<Object>>(tokens[currentToken]);
 
     if(matchAny(LI_NUMBER))
         return std::make_shared<LiteralExpression<Object>>(previous().Value);
