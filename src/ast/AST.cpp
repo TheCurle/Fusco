@@ -4,8 +4,6 @@
  ***********/
 
 #include <string>
-#include <cstdarg>
-#include <initializer_list>
 #include <interpreter/Interpreter.hpp>
 
 static size_t NestLevel = 0;

@@ -12,7 +12,7 @@ class Interpreter;
 
 class GetTime : public Callable {
 public:
-    ~GetTime() override {}
+    ~GetTime() override = default;
 
     size_t arguments() override { return 0; }
 

@@ -8,7 +8,7 @@
 #include <utility>
 
 void Interpreter::resolve(Expression<Object>* expr, int depth) {
-    Locals.at(expr) = depth;
+    Locals[expr] = depth;
 }
 
 void Interpreter::Interpret(const std::vector<shared_ptr<Statement>>& statements) {

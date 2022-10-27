@@ -5,6 +5,7 @@
 #pragma once
 #include <lexer/Lex.hpp>
 #include <ast/Expression.hpp>
+#include <utility>
 
 class ExpressionStatement;
 class PrintStatement;
@@ -12,7 +13,6 @@ class VariableStatement;
 class BlockStatement;
 class IfStatement;
 class WhileStatement;
-class ForStatement;
 class FuncStatement;
 class ClassStatement;
 class ReturnStatement;
@@ -40,7 +40,7 @@ class Statement : public std::enable_shared_from_this<Statement> {
 
 class ExpressionStatement : public Statement {
     public:
-    explicit ExpressionStatement(shared_ptr<Expression<Object>> pExpr) : Expr(pExpr) {}
+    explicit ExpressionStatement(shared_ptr<Expression<Object>> pExpr) : Expr(std::move(pExpr)) {}
     void accept(shared_ptr<StatementVisitor> visitor) override {
         visitor->visitExpression(*this);
     }
@@ -50,7 +50,7 @@ class ExpressionStatement : public Statement {
 
 class PrintStatement : public Statement {
     public:
-    explicit PrintStatement(shared_ptr<Expression<Object>> pExpr) : Expr(pExpr) {}
+    explicit PrintStatement(shared_ptr<Expression<Object>> pExpr) : Expr(std::move(pExpr)) {}
     void accept(shared_ptr<StatementVisitor> visitor) override {
         visitor->visitPrint(*this);
     }
@@ -60,7 +60,7 @@ class PrintStatement : public Statement {
 
 class VariableStatement : public Statement {
     public:
-    explicit VariableStatement(struct Token pName, shared_ptr<Expression<Object>> pExpr) : Expr(pExpr), Name(pName) {}
+    explicit VariableStatement(Token pName, shared_ptr<Expression<Object>> pExpr) : Expr(std::move(pExpr)), Name(std::move(pName)) {}
     void accept(shared_ptr<StatementVisitor> visitor) override {
         visitor->visitVariable(*this);
     }
@@ -71,7 +71,7 @@ class VariableStatement : public Statement {
 
 class BlockStatement : public Statement {
     public:
-    explicit BlockStatement(std::vector<shared_ptr<Statement>> statements) : Statements(statements) {}
+    explicit BlockStatement(std::vector<shared_ptr<Statement>> statements) : Statements(std::move(statements)) {}
     void accept(shared_ptr<StatementVisitor> visitor) override {
         visitor->visitBlock(*this);
     }
@@ -82,7 +82,7 @@ class BlockStatement : public Statement {
 class IfStatement : public Statement {
     public:
     explicit IfStatement(shared_ptr<Expression<Object>> pCondition, shared_ptr<Statement> pThen, shared_ptr<Statement> pElse)
-        : Condition(pCondition), Then(pThen), Else(pElse) {}
+        : Condition(std::move(pCondition)), Then(std::move(pThen)), Else(std::move(pElse)) {}
 
     void accept(shared_ptr<StatementVisitor> visitor) override {
         visitor->visitIf(*this);
@@ -96,7 +96,7 @@ class IfStatement : public Statement {
 class WhileStatement : public Statement {
     public:
     explicit WhileStatement(shared_ptr<Expression<Object>> pCondition, shared_ptr<Statement> pBody)
-        : Condition(pCondition), Body(pBody) {}
+        : Condition(std::move(pCondition)), Body(std::move(pBody)) {}
 
     void accept(shared_ptr<StatementVisitor> visitor) override {
         visitor->visitWhile(*this);
@@ -109,7 +109,7 @@ class WhileStatement : public Statement {
 class FuncStatement : public Statement {
     public:
     explicit FuncStatement(Token pName, std::vector<Token> pParams, std::vector<shared_ptr<Statement>> pBody)
-        : Name(pName), Params(pParams), Body(pBody) {}
+        : Name(std::move(pName)), Params(std::move(pParams)), Body(std::move(pBody)) {}
 
     void accept(shared_ptr<StatementVisitor> visitor) override {
         visitor->visitFunc(*this);
@@ -123,7 +123,7 @@ class FuncStatement : public Statement {
 class ClassStatement : public Statement {
     public:
     explicit ClassStatement(Token pName, std::vector<std::shared_ptr<FuncStatement>> pFunctions)
-        : name(pName), functions(pFunctions) {}
+        : name(std::move(pName)), functions(std::move(pFunctions)) {}
 
     void accept(shared_ptr<StatementVisitor> visitor) override {
         visitor->visitClass(*this);
@@ -136,7 +136,7 @@ class ClassStatement : public Statement {
 class ReturnStatement : public Statement {
     public:
     explicit ReturnStatement(Token pKeyword, EXPR pValue)
-        : Keyword(pKeyword), Value(pValue) {}
+        : Keyword(std::move(pKeyword)), Value(std::move(pValue)) {}
 
     void accept(shared_ptr<StatementVisitor> visitor) override {
         visitor->visitReturn(*this);

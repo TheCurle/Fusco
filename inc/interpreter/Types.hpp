@@ -29,11 +29,11 @@ public:
     virtual Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> arguments) = 0;
 };
 
-class Function : public Callable{
+class Function : public Callable {
 public:
     Function(shared_ptr<FuncStatement> pDeclaration, shared_ptr<ExecutionContext> pClosure);
-    Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params);
-    size_t arguments();
+    Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params) override;
+    size_t arguments() override;
     shared_ptr<Function> bind(shared_ptr<Instance> instance);
 
     shared_ptr<FuncStatement> Declaration;
