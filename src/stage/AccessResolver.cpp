@@ -94,6 +94,9 @@ void Resolver::visitFunc(FuncStatement &stmt) {
 }
 
 void Resolver::visitClass(ClassStatement &stmt) {
+    ClassType enclosingClass = currentClass;
+    currentClass = ClassType::CLASS;
+
     declare(stmt.name);
     define(stmt.name);
 
@@ -106,6 +109,7 @@ void Resolver::visitClass(ClassStatement &stmt) {
     }
 
     endScope();
+    currentClass = enclosingClass;
 }
 
 void Resolver::resolveFunction(FuncStatement &stmt, FunctionType type) {
@@ -124,7 +128,7 @@ void Resolver::resolveFunction(FuncStatement &stmt, FunctionType type) {
 }
 
 void Resolver::visitReturn(ReturnStatement &stmt) {
-    if (currentFunction == FunctionType::NONE)
+    if (currentFunction == FunctionType::F_NONE)
         throw Error(RuntimeError(stmt.Keyword, "Unable to return from the global scope."));
 
     if(stmt.Value != nullptr) 
@@ -200,6 +204,10 @@ Object Resolver::visitSetExpression(SetExpression<Object> &expr) {
 }
 
 Object Resolver::visitThisExpression(ThisExpression<Object> &expr) {
+    if (currentClass == ClassType::C_NONE) {
+        Error(expr.Name, "Cannot use \"this\" outside of a Class.");
+    }
+
     resolveLocal(&expr, expr.Name);
     return Object::Null;
 }

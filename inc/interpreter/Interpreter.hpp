@@ -175,7 +175,8 @@ public:
     explicit Resolver(std::shared_ptr<Interpreter> interp) {
         scopes = std::vector<std::map<std::string, bool>>();
         interpreter = std::move(interp);
-        currentFunction = FunctionType::NONE;
+        currentFunction = FunctionType::F_NONE;
+        currentClass = ClassType::C_NONE;
     }
 
     ~Resolver() override = default;
@@ -233,6 +234,7 @@ public:
 private:
     std::vector<std::map<std::string, bool>> scopes;
     FunctionType currentFunction;
+    ClassType  currentClass;
     std::shared_ptr<Interpreter> interpreter;
 
     void beginScope();

@@ -113,9 +113,14 @@ public:
 };
 
 enum FunctionType {
-    NONE,       // No function is currently being resolved
+    F_NONE,     // No function is currently being resolved
     FUNCTION,   // A function in the global scope is currently being resolved
     MEMBER      // A member function in a class is currently being resolved
+};
+
+enum ClassType {
+    C_NONE,     // No class is currently being resolved
+    CLASS,      // A regular class is currently being resolved.
 };
 
 class FClass : public Callable, public std::enable_shared_from_this<FClass> {
