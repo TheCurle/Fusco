@@ -183,13 +183,13 @@ public:
 
     Object dummy() override { return Object::Null; }
 
-    void resolve(std::shared_ptr<Statement> statement);
+    void resolve(const std::shared_ptr<Statement>& statement);
 
     void resolve(EXPR expression);
 
-    void resolveLocal(Expression<Object>*, Token name);
+    void resolveLocal(Expression<Object>*, const Token& name);
 
-    void resolveAll(std::vector<std::shared_ptr<Statement>> statements);
+    void resolveAll(const std::vector<std::shared_ptr<Statement>>& statements);
 
     void visitExpression(ExpressionStatement &stmt) override;
 

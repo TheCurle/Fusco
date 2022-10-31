@@ -122,14 +122,15 @@ class FuncStatement : public Statement {
 
 class ClassStatement : public Statement {
     public:
-    explicit ClassStatement(Token pName, std::vector<std::shared_ptr<FuncStatement>> pFunctions)
-        : name(std::move(pName)), functions(std::move(pFunctions)) {}
+    explicit ClassStatement(Token pName, std::vector<std::shared_ptr<FuncStatement>> pFunctions, std::shared_ptr<VariableExpression<Object>>  superName)
+        : name(std::move(pName)), superclass(std::move(superName)), functions(std::move(pFunctions)) {}
 
     void accept(shared_ptr<StatementVisitor> visitor) override {
         visitor->visitClass(*this);
     }
 
     Token name;
+    std::shared_ptr<VariableExpression<Object>> superclass;
     std::vector<std::shared_ptr<FuncStatement>> functions;
 };
 

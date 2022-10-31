@@ -63,10 +63,11 @@ enum Lexeme {
     KW_FUNC, // func
     KW_VAR,  // var
 
-    KW_CLASS,  // class
-    KW_THIS,   // this
-    KW_SUPER,  // super
-    KW_RETURN, // return
+    KW_CLASS,   // class
+    KW_THIS,    // this
+    KW_EXTENDS, // extends
+    KW_SUPER,   // super
+    KW_RETURN,  // return
 
     KW_IF,   // if
     KW_ELSE, // else

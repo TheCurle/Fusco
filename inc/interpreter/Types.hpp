@@ -31,13 +31,14 @@ public:
 
 class Function : public Callable {
 public:
-    Function(shared_ptr<FuncStatement> pDeclaration, shared_ptr<ExecutionContext> pClosure);
+    Function(shared_ptr<FuncStatement> pDeclaration, shared_ptr<ExecutionContext> pClosure, bool constr);
     Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params) override;
     size_t arguments() override;
     shared_ptr<Function> bind(shared_ptr<Instance> instance);
 
     shared_ptr<FuncStatement> Declaration;
     shared_ptr<ExecutionContext> Closure;
+    bool constructor; // Flag that shows whether this func is a constructor.
 };
 
 class Object {
@@ -115,7 +116,8 @@ public:
 enum FunctionType {
     F_NONE,     // No function is currently being resolved
     FUNCTION,   // A function in the global scope is currently being resolved
-    MEMBER      // A member function in a class is currently being resolved
+    MEMBER,     // A member function in a class is currently being resolved
+    CONSTRUCTOR // A constructor is currently being resolved
 };
 
 enum ClassType {
@@ -125,14 +127,28 @@ enum ClassType {
 
 class FClass : public Callable, public std::enable_shared_from_this<FClass> {
     public:
-    FClass(std::string pName, std::map<std::string, shared_ptr<Function>> pMethods) : Name(std::move(pName)), Methods(std::move(pMethods)) {}
+    FClass(std::string pName, std::map<std::string, shared_ptr<Function>> pMethods, std::shared_ptr<FClass> super) : Name(std::move(pName)), superclass(std::move(super)), Methods(std::move(pMethods)) {}
     ~FClass() override = default;
 
-    size_t arguments() override { return 0; }
+    size_t arguments() override {
+        Object constructor = findMethod(Name);
+        if (!(constructor.isNull())) {
+            return constructor.CallableData->arguments();
+        }
+
+        return 0;
+    }
+
     Object call(shared_ptr<Interpreter> interpreter, std::vector<Object> params) override {
-        UNUSED(interpreter);
-        UNUSED(params);
-        return Object::NewInstance(shared_from_this());
+        Object inst = Object::NewInstance(shared_from_this());
+
+        // Call constructor, if it exists.
+        Object constructor = findMethod(Name);
+        if (!(constructor.isNull())) {
+            std::static_pointer_cast<Function>(constructor.CallableData)->bind(inst.InstanceData)->call(interpreter, params);
+        }
+
+        return inst;
     }
 
     Object findMethod(const std::string& name) {
@@ -143,6 +159,7 @@ class FClass : public Callable, public std::enable_shared_from_this<FClass> {
     }
 
     std::string Name;
+    std::shared_ptr<FClass> superclass;
     std::map<std::string, shared_ptr<Function>> Methods;
 };
 

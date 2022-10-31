@@ -58,16 +58,24 @@ void Interpreter::visitWhile(WhileStatement &stmt) {
 }
 
 void Interpreter::visitFunc(FuncStatement &stmt) {
-    shared_ptr<Function> func = std::make_shared<Function>(std::make_shared<FuncStatement>(stmt), Environment);
+    shared_ptr<Function> func = std::make_shared<Function>(std::make_shared<FuncStatement>(stmt), Environment, false);
     Environment->define(stmt.Name, Object::NewCallable(func));
 }
 
 void Interpreter::visitClass(ClassStatement &stmt) {
+    Object super = Object::Null;
+    if (stmt.superclass->Name.Lexeme != "Object") {
+        super = Evaluate(stmt.superclass);
+        if (super.Type != Object::ClassType) {
+            Error(stmt.superclass->Name, "A class' super must also be a class.");
+        }
+    }
+
     Environment->define(stmt.name, Object::Null);
 
     std::map<std::string, shared_ptr<Function>> methods;
     for (const shared_ptr<FuncStatement>& func : stmt.functions) {
-        shared_ptr<Function> method = std::make_shared<Function>(func, Environment);
+        shared_ptr<Function> method = std::make_shared<Function>(func, Environment, func->Name.Lexeme == stmt.name.Lexeme);
         methods.emplace(func->Name.Lexeme, method);
     }
 

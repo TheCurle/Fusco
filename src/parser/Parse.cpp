@@ -186,6 +186,13 @@ shared_ptr<FuncStatement> Parser::function(std::string type) {
 
 shared_ptr<ClassStatement> Parser::classDeclaration() {
     Token name = verify(LI_IDENTIFIER, "Expected a class name.");
+    Token superName;
+    superName.Lexeme = "Object";
+
+    if(check(KW_EXTENDS)) {
+        superName = verify(LI_IDENTIFIER, "Expected a superclass name.");
+    }
+
     verify(LI_LBRACE, "Expected a block start after a class body.");
 
     std::vector<std::shared_ptr<FuncStatement>> functions;
@@ -195,7 +202,7 @@ shared_ptr<ClassStatement> Parser::classDeclaration() {
 
     verify(LI_RBRACE, "Expected a block end for a class.");
 
-    return std::make_shared<ClassStatement>(name, functions);
+    return std::make_shared<ClassStatement>(name, functions, std::make_shared<VariableExpression<Object>>(superName));
 }
 
 EXPR Parser::expression() {

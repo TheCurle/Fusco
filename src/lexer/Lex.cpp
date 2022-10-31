@@ -264,6 +264,8 @@ int Lexer::ReadKeyword(std::string Str) {
         case 'e':
             if(Str.compare("else") == 0)
                 return KW_ELSE;
+            if(Str.compare("extends") == 0)
+                return KW_EXTENDS;
             break;
 
         case 'f':
@@ -363,7 +365,7 @@ void Lexer::Advance() {
             return;
 
         case '.':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = LI_PERIOD;
             break;
 
@@ -394,17 +396,17 @@ void Lexer::Advance() {
             break;
 
         case '*':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = AR_ASTERISK;
             break;
 
         case '/':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = AR_RSLASH;
             break;
 
         case ',':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = LI_COMMA;
             break;
 
@@ -454,42 +456,42 @@ void Lexer::Advance() {
             break;
 
         case '>':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = CMP_GREATER;
             break;
 
         case ';':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = LI_SEMICOLON;
             break;
 
         case '(':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = LI_LPAREN;
             break;
 
         case ')':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = LI_RPAREN;
             break;
 
         case '{':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = LI_LBRACE;
             break;
 
         case '}':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = LI_RBRACE;
             break;
 
         case '[':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = LI_LBRAS;
             break;
 
         case ']':
-            Token->Lexeme = Char;
+            Token->Lexeme = std::to_string(Char);
             Token->Type = LI_RBRAS;
             break;
 

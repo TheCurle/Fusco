@@ -74,8 +74,8 @@ Object Object::NewInstance(const shared_ptr<FClass>& fclass) {
 
 Callable::~Callable() = default;
 
-Function::Function(shared_ptr<FuncStatement> pDeclaration, shared_ptr<ExecutionContext> pClosure)
-    : Declaration(std::move(pDeclaration)), Closure(std::move(pClosure)) {}
+Function::Function(shared_ptr<FuncStatement> pDeclaration, shared_ptr<ExecutionContext> pClosure, bool constr)
+    : Declaration(std::move(pDeclaration)), Closure(std::move(pClosure)), constructor(constr) {}
 
 Object Function::call(shared_ptr<Interpreter> interpreter, std::vector<Object> params)  {
     shared_ptr<ExecutionContext> environment = std::make_shared<ExecutionContext>(Closure);
@@ -89,6 +89,8 @@ Object Function::call(shared_ptr<Interpreter> interpreter, std::vector<Object> p
     } catch (Return &value) {
         return value.Value;
     }
+
+    if (constructor) { return environment->getAt(0, "this"); }
     return Object::Null;
 }
 
@@ -103,5 +105,5 @@ shared_ptr<Function> Function::bind(shared_ptr<Instance> instance) {
     Token token;
     token.Lexeme = "this";
     env->define(token, obj);
-    return std::make_shared<Function>(Declaration, env);
+    return std::make_shared<Function>(Declaration, env, constructor);
 }

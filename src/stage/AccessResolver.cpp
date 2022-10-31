@@ -6,7 +6,7 @@
 #include <interpreter/Interpreter.hpp>
 #include <iostream>
 
-void Resolver::resolve(std::shared_ptr<Statement> statement) {
+void Resolver::resolve(const std::shared_ptr<Statement>& statement) {
     statement->accept(shared_from_this());
 }
 
@@ -14,8 +14,8 @@ void Resolver::resolve(EXPR expr) {
     expr->accept(shared_from_this());
 }
 
-void Resolver::resolveAll(std::vector<std::shared_ptr<Statement>> statements) {
-    for(std::shared_ptr<Statement> statement : statements) {
+void Resolver::resolveAll(const std::vector<std::shared_ptr<Statement>>& statements) {
+    for(const std::shared_ptr<Statement>& statement : statements) {
         resolve(statement);
     }
 }
@@ -44,7 +44,7 @@ void Resolver::define(Token name) {
 }
 
 
-void Resolver::resolveLocal(Expression<Object>* expr, Token name) {
+void Resolver::resolveLocal(Expression<Object>* expr, const Token& name) {
     for (int i = scopes.size() - 1; i >= 0; i--) {
         if(scopes.at(i).find(name.Lexeme) != scopes.at(i).end()) {
             interpreter->resolve(expr, scopes.size() - i - 1);
@@ -100,11 +100,15 @@ void Resolver::visitClass(ClassStatement &stmt) {
     declare(stmt.name);
     define(stmt.name);
 
+    if (stmt.name.Lexeme == stmt.superclass->Name.Lexeme) {
+        Error(stmt.name, "A class cannot inherit from itself!");
+    }
+
     beginScope();
     scopes.back().emplace("this", true);
 
     for (const shared_ptr<FuncStatement>& func : stmt.functions) {
-        FunctionType decl = FunctionType::MEMBER;
+        FunctionType decl = func->Name.Lexeme == stmt.name.Lexeme ? FunctionType::CONSTRUCTOR : FunctionType::MEMBER;
         resolveFunction(*func, decl);
     }
 
@@ -117,7 +121,7 @@ void Resolver::resolveFunction(FuncStatement &stmt, FunctionType type) {
     currentFunction = type;
 
     beginScope();
-    for(Token param : stmt.Params) {
+    for(const Token& param : stmt.Params) {
         declare(param);
         define(param);
     }
@@ -130,6 +134,8 @@ void Resolver::resolveFunction(FuncStatement &stmt, FunctionType type) {
 void Resolver::visitReturn(ReturnStatement &stmt) {
     if (currentFunction == FunctionType::F_NONE)
         throw Error(RuntimeError(stmt.Keyword, "Unable to return from the global scope."));
+    if (currentFunction == FunctionType::CONSTRUCTOR)
+        throw Error(RuntimeError(stmt.Keyword, "Unable to return from a constructor."));
 
     if(stmt.Value != nullptr) 
         resolve(stmt.Value);
@@ -153,7 +159,7 @@ Object Resolver::visitLiteralExpression(LiteralExpression<Object> &expr) {
 }
 
 Object Resolver::visitVariableExpression(VariableExpression<Object> &expr) {
-    if(!scopes.empty() && scopes.back().at(expr.Name.Lexeme) == false) {
+    if(!scopes.empty() && !scopes.back().at(expr.Name.Lexeme)) {
         throw Error(RuntimeError(expr.Name, "Attempted to read a variable in its own initializer"));
     }
 
@@ -178,7 +184,7 @@ Object Resolver::visitUnaryExpression(UnaryExpression<Object> &expr) {
 Object Resolver::visitCallExpression(CallExpression<Object> &expr) {
     resolve(expr.Callee);
 
-    for (std::shared_ptr<Expression<Object>> arg : expr.Arguments) {
+    for (const std::shared_ptr<Expression<Object>>& arg : expr.Arguments) {
         resolve(arg);
     }
     
