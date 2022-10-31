@@ -78,6 +78,7 @@ void TreePrinter::visitFunc(FuncStatement &stmt) {
 
 void TreePrinter::visitClass(ClassStatement &stmt) {
     std::cout << std::string("Class ").append(stmt.name.Lexeme) << std::endl;
+    std::cout << "\tSuper: " + stmt.superclass->Name.Lexeme + "\n";
     std::cout << "\tMethods: ";
     for(const std::shared_ptr<FuncStatement>& method : stmt.functions) {
         std::cout << nest("-> ");

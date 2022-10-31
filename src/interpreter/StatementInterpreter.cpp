@@ -79,7 +79,7 @@ void Interpreter::visitClass(ClassStatement &stmt) {
         methods.emplace(func->Name.Lexeme, method);
     }
 
-    shared_ptr<FClass> fclass = std::make_shared<FClass>(stmt.name.Lexeme, methods);
+    shared_ptr<FClass> fclass = std::make_shared<FClass>(stmt.name.Lexeme, methods, super.ClassData);
     Environment->assign(stmt.name, Object::NewClassDefinition(fclass));
 }
 

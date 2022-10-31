@@ -190,6 +190,7 @@ shared_ptr<ClassStatement> Parser::classDeclaration() {
     superName.Lexeme = "Object";
 
     if(check(KW_EXTENDS)) {
+        advance();
         superName = verify(LI_IDENTIFIER, "Expected a superclass name.");
     }
 
@@ -368,15 +369,15 @@ EXPR Parser::primary() {
     throw error(peek(), "Expected an expression");
 }
 
-RuntimeError Parser::error(struct Token token, std::string message) {
+RuntimeError Parser::error(const struct Token& token, const std::string& message) {
     if (token.Type == LI_EOF) {
-        return RuntimeError(token, std::to_string(token.Line) + " at end" + message);
+        return {token, std::to_string(token.Line) + " at end" + message};
     } else {
-        return RuntimeError(token, std::to_string(token.Line) + " at '" + token.Lexeme + "'" + message);
+        return {token, std::to_string(token.Line) + " at '" + token.Lexeme + "'" + message};
     }
 }
 
-struct Token Parser::verify(Lexeme type, std::string message) {
+struct Token Parser::verify(Lexeme type, const std::string& message) {
     if(check(type)) return advance();
     throw error(peek(), message);
 }

@@ -154,6 +154,9 @@ class FClass : public Callable, public std::enable_shared_from_this<FClass> {
     Object findMethod(const std::string& name) {
         if (Methods.find(name) != Methods.end()) 
             return Object::NewFunction(Methods.at(name));
+
+        if (superclass != nullptr)
+            return superclass->findMethod(name);
         
         return Object::Null;
     }
@@ -175,7 +178,7 @@ class Instance : public std::enable_shared_from_this<Instance> {
 
         Object method = fclass->findMethod(name.Lexeme);
         if (!method.isNull())
-            return Object::NewFunction(fclass->Methods.at(name.Lexeme)->bind(shared_from_this()));
+            return Object::NewFunction(std::reinterpret_pointer_cast<Function>(method.CallableData)->bind(shared_from_this()));
         
         throw RuntimeError(name, "No such property " + name.Lexeme);
     }

@@ -59,8 +59,8 @@ private:
     EXPR primary();
 
     /** Error management **/
-    struct Token verify(Lexeme type, std::string error);
-    RuntimeError error(struct Token token, std::string message);
+    struct Token verify(Lexeme type, const std::string& error);
+    RuntimeError error(const struct Token& token, const std::string& message);
 
     void recover();
 };
